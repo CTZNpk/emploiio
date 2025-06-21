@@ -1,0 +1,1416 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <link rel="icon" href="https://cdn.prod.website-files.com/63b403c9157c55695c0f3013/640fbd52d8a6c6e0d3122789_Favicon256.png" type="image/x-icon">
+    <title>emploio® - Interview-Sheet</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kandidatenformular</title>
+    <!-- Muss zuerst geladen werden -->
+    <script src="/static/js/branchen-positionen.js"></script>
+    <!-- Danach folgt das Haupt-Filter-Skript -->
+    <script src="/static/js/branch-position-filter.js"></script>
+    <!-- Bulma CSS (als Basis) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+    <!-- Nunito Sans Schriftart -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Eigene Styles -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    <!-- Autocomplete-Styles -->
+    <link rel="stylesheet" href="/static/css/autocomplete.css">
+    <!-- RecruitCRM API Integration -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="/static/js/suggestion-db.js"></script>
+    <script src="/static/js/autocomplete.js"></script>
+    <script src="/static/js/recruitcrm-api.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+    <!-- Tom Select Styles -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+    <!-- Tom Select JS -->
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+</head>
+<body>
+
+
+    <div class="logo-container">
+        <img src="https://cdn.prod.website-files.com/63b403c9157c55695c0f3013/67da797272d438e84b8be762_emploio-gmbh-logo.svg" 
+             alt="emploio Logo" 
+             class="emploio-logo">
+      </div>
+
+    <section class="section">
+        <div class="container">
+            <h1 class="title">Kandidatenformular</h1>
+            
+            <form id="kandidatenForm">
+                <!-- Identifikationsdaten -->
+                <div class="form-section">
+                    <h2 class="subtitle">
+                        <i class="fas fa-id-badge mr-2"></i>Identifikationsdaten
+                    </h2>
+
+<div class="field">
+    <div class="control">
+        <input class="input" type="url" name="avatar" id="avatar" readonly style="display: none;">
+    </div>
+</div>
+                
+                    <div class="field">
+                        <label class="label">ID <span class="has-text-danger">*</span></label>
+                        <div class="control has-icons-right">
+                            <input class="input" type="text" name="kandidat_id" id="kandidat_id" required>
+                            <span class="icon is-small is-right">
+                                <i class="fas fa-id-card"></i>
+                            </span>
+                        </div>
+                        <p class="help">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Geben Sie die Kandidaten-ID ein, um Daten automatisch aus recruitCRM zu laden
+                        </p>
+                    </div>
+                
+                    <div class="field is-grouped mt-2 mb-3">
+                        <div class="control">
+                            <button id="loadFromCRM" type="button" class="button is-info">
+                                <span class="icon">
+                                    <i class="fas fa-sync-alt"></i>
+                                </span>
+                                <span>Daten aus recruitCRM laden</span>
+                            </button>
+                        </div>
+                    </div>
+                
+                    <div class="field">
+                        <label class="label">Kandidatenslug</label>
+                        <div class="control">
+                            <input class="input" type="text" name="kandidat_slug" id="kandidat_slug" readonly>
+                        </div>
+                    </div>
+                
+                    <!-- <div class="field"> -->
+                    <!--     <label class="label">Consultant</label> -->
+                    <!--     <div class="control"> -->
+                    <!--         <input class="input" type="text" name="consultant" id="consultant" readonly> -->
+                    <!--     </div> -->
+                    <!-- </div> -->
+                </div>
+
+                <!-- Persönliche Daten -->
+                <div class="form-section">
+                    <h2 class="subtitle">
+                        <i class="fas fa-user mr-2"></i>Persönliche Daten
+                    </h2>
+
+                    <div class="field">
+                        <label class="label">Vorname</label>
+                        <div class="control">
+                            <input class="input" type="text" name="vorname" id="vorname" required>
+                        </div>
+                    </div>
+                    
+                    <div class="field">
+                        <label class="label">Nachname</label>
+                        <div class="control">
+                            <input class="input" type="text" name="nachname" id="nachname" required>
+                        </div>
+                    </div>
+                    
+                    <div class="field">
+                        <label class="label">Geschlecht</label>
+                        <div class="control">
+                            <div class="select">
+                                <select name="geschlecht">
+                                    <option value=0>Männlich</option>
+                                    <option value=1>Weiblich</option>
+                                    <option value=2>Divers</option>
+                                    <option value=3>Nicht verfügbar</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="field">
+                        <label class="label">Lebenslauf</label>
+                        <div class="control">
+                            <input class="input" type="url" name="cv_link" id="cv_link">
+                        </div>
+                        <div class="mt-2">
+                            <a id="open-cv" href="#" target="_blank" class="button is-small is-info" title="Öffnen" style="display: none;">
+                                <i class="fas fa-external-link-alt mr-1"></i>
+                                Lebenslauf öffnen
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="field">
+                        <label class="label">XING Link</label>
+                        <div class="control">
+                            <input class="input" type="url" name="xing_link" id="xing_link">
+                        </div>
+                        <div class="mt-2">
+                            <a id="open-xing" href="#" target="_blank" class="button is-small is-info" title="Öffnen" style="display: none;">
+                                <i class="fas fa-external-link-alt mr-1"></i>
+                                Link öffnen
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="field">
+                        <label class="label">LinkedIn Link</label>
+                        <div class="control">
+                            <input class="input" type="url" name="linkedin_link" id="linkedin_link">
+                        </div>
+                        <div class="mt-2">
+                            <a id="open-linkedin" href="#" target="_blank" class="button is-small is-info" title="Öffnen" style="display: none;">
+                                <i class="fas fa-external-link-alt mr-1"></i>
+                                Link öffnen
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Kontaktdaten -->
+                <div class="form-section">
+                    <h2 class="subtitle">
+                        <i class="fas fa-envelope mr-2"></i>Kontaktdaten
+                    </h2>
+                    <div class="field">
+                        <label class="label">E-Mail-Adresse</label>
+                        <div class="control">
+                            <input class="input" type="email" name="email">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Kontaktnummer</label>
+                        <div class="control">
+                            <input class="input" type="tel" name="phone">
+                        </div>
+                    </div>
+                </div>
+                                
+                <!-- Branche, Kategorie, Position -->
+                <div class="form-section">
+                    <h2 class="subtitle">
+                        <i class="fas fa-briefcase mr-2"></i>Berufliche Informationen
+                    </h2>
+                    <div class="field">
+                        <label class="label">Branche auswählen</label>
+                        <div class="control">
+                            <div class="select">
+                                <select name="branche" id="branche-select">
+                                    <option value="">Bitte wählen</option>
+                                    <option value="emploio Executive">emploio® Executive</option>
+                                    <option value="emploio Finance">emploio® F﻿inance</option>
+                                    <option value="emploio IT">emploio® IT</option>
+                                    <option value="emploio Med">emploio® Med</option>
+                                    <option value="emploio Sales">emploio® Sales</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Aktuelle Position</label>
+                        <div class="control">
+                            <div class="select">
+                                <select name="aktuelle_position" id="position-select">
+                                    <option value="">Bitte wählen</option>
+                                    <option value="Assistenzarzt">Assistenzarzt (m/w/d)</option>
+                                    <option value="Facharzt">Facharzt (m/w/d)</option>
+                                    <option value="Funktionsoberarzt">Funktionsoberarzt (m/w/d)</option>
+                                    <option value="Oberarzt">Oberarzt (m/w/d)</option>
+                                    <option value="Leitender Oberarzt">Leitender Oberarzt (m/w/d)</option>
+                                    <option value="Chefarzt">Chefarzt (m/w/d)</option>
+                                    <option value="Leitender Chefarzt">Leitender Chefarzt (m/w/d)</option>
+                                    <option value="Ärztlicher Direktor">Ärztlicher Direktor (m/w/d)</option>
+                                    <option value="Privatdozent">Privatdozent (m/w/d)</option>
+                                    <option value="Weiterbildungsassistent">Weiterbildungsassistent (m/w/d)</option>
+                                    <option value="Stationsarzt">Stationsarzt (m/w/d)</option>
+                                    <option value="Sektionsleiter">Sektionsleiter (m/w/d)</option>
+                                    <option value="Honorararzt">Honorararzt (m/w/d)</option>
+                                    <option value="Vertretungsarzt">Vertretungsarzt (m/w/d)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field">
+                            <label class="label">Fachbereiche (Mehrfachauswahl möglich)</label>
+                            <div class="control">
+                                <select name="kategorie[]" id="fachbereiche-select" multiple size="8">
+                                    <option value="">Bitte wählen</option>
+                                    <option value="Allergologie">Allergologie</option>
+                                    <option value="Allgemeinmedizin">Allgemeinmedizin</option>
+                                    <option value="Angiologie">Angiologie</option>
+                                    <option value="Anästhesie">Anästhesie</option>
+                                    <option value="Arbeitsmedizin">Arbeitsmedizin</option>
+                                    <option value="Augenheilkunde">Augenheilkunde</option>
+                                    <option value="Chirurgie">Chirurgie</option>
+                                    <option value="Dermatologie und Venerologie">Dermatologie und Venerologie</option>
+                                    <option value="Diagnostische Radiologie">Diagnostische Radiologie</option>
+                                    <option value="Endokrinologie und Diabetologie">Endokrinologie und Diabetologie</option>
+                                    <option value="Forensische Pathologie">Forensische Pathologie</option>
+                                    <option value="Forensische Psychiatrie">Forensische Psychiatrie</option>
+                                    <option value="Frauenheilkunde und Geburtshilfe (Gynäkologie)">Frauenheilkunde und Geburtshilfe (Gynäkologie)</option>
+                                    <option value="Gastroenterologie">Gastroenterologie</option>
+                                    <option value="Gefäßchirurgie">Gefäßchirurgie</option>
+                                    <option value="Geriatrie">Geriatrie</option>
+                                    <option value="Hals-Nasen-Ohren-Heilkunde">Hals-Nasen-Ohren-Heilkunde</option>
+                                    <option value="Herzchirurgie">Herzchirurgie</option>
+                                    <option value="Homöopathie">Homöopathie</option>
+                                    <option value="Humangenetik">Humangenetik</option>
+                                    <option value="Hämatologie und internistische Onkologie">Hämatologie und internistische Onkologie</option>
+                                    <option value="Immunologie">Immunologie</option>
+                                    <option value="Infektiologie">Infektiologie</option>
+                                    <option value="Innere Medizin">Innere Medizin</option>
+                                    <option value="Intensivmedizin">Intensivmedizin</option>
+                                    <option value="Interventionelle Radiologie">Interventionelle Radiologie</option>
+                                    <option value="Kardiologie">Kardiologie</option>
+                                    <option value="Kinder- und Jugendmedizin">Kinder- und Jugendmedizin</option>
+                                    <option value="Kinder- und Jugendpsychiatrie und -psychotherapie">Kinder- und Jugendpsychiatrie und -psychotherapie</option>
+                                    <option value="Kinderchirurgie">Kinderchirurgie</option>
+                                    <option value="Kinderkardiologie">Kinderkardiologie</option>
+                                    <option value="Labormedizin">Labormedizin</option>
+                                    <option value="Mikrobiologie">Mikrobiologie</option>
+                                    <option value="Neonatologie">Neonatologie</option>
+                                    <option value="Nephrologie">Nephrologie</option>
+                                    <option value="Neurochirurgie">Neurochirurgie</option>
+                                    <option value="Neurologie">Neurologie</option>
+                                    <option value="Notfallmedizin">Notfallmedizin</option>
+                                    <option value="Nuklearmedizin">Nuklearmedizin</option>
+                                    <option value="Orthopädie und Unfallchirurgie">Orthopädie und Unfallchirurgie</option>
+                                    <option value="Palliativmedizin">Palliativmedizin</option>
+                                    <option value="Pathologie">Pathologie</option>
+                                    <option value="Pharmakologie und Toxikologie">Pharmakologie und Toxikologie</option>
+                                    <option value="Physikalische und Rehabilitative Medizin">Physikalische und Rehabilitative Medizin</option>
+                                    <option value="Plastische, Rekonstruktive und Ästhetische Chirurgie">Plastische, Rekonstruktive und Ästhetische Chirurgie</option>
+                                    <option value="Pneumologie">Pneumologie</option>
+                                    <option value="Psychiatrie und Psychotherapie">Psychiatrie und Psychotherapie</option>
+                                    <option value="Psychosomatische Medizin und Psychotherapie">Psychosomatische Medizin und Psychotherapie</option>
+                                    <option value="Radiologie">Radiologie</option>
+                                    <option value="Rechtsmedizin">Rechtsmedizin</option>
+                                    <option value="Reproduktionsmedizin">Reproduktionsmedizin</option>
+                                    <option value="Rheumatologie">Rheumatologie</option>
+                                    <option value="Schmerztherapie">Schmerztherapie</option>
+                                    <option value="Sexualmedizin">Sexualmedizin</option>
+                                    <option value="Sportmedizin">Sportmedizin</option>
+                                    <option value="Strahlentherapie">Strahlentherapie</option>
+                                    <option value="Thoraxchirurgie">Thoraxchirurgie</option>
+                                    <option value="Transfusionsmedizin">Transfusionsmedizin</option>
+                                    <option value="Tropenmedizin">Tropenmedizin</option>
+                                    <option value="Urologie">Urologie</option>
+                                    <option value="Virologie und Infektionsepidemiologie">Virologie und Infektionsepidemiologie</option>
+                                    <option value="Viszeralchirurgie">Viszeralchirurgie</option>
+                                    <option value="Zentrale Notaufnahme">Zentrale Notaufnahme</option>
+                                    <option value="Endoskopie">Endoskopie</option>
+                                </select>
+                                </div>
+                        </div>
+
+                        <!-- Add a new field for Zusatzbezeichnungen -->
+                    <div class="field">
+                        <label class="label">Zusatzbezeichnungen (Mehrfachauswahl möglich)</label>
+                        <div class="control">
+                            <div class="select is-multiple">
+                                <select name="zusatzbezeichnungen[]" id="zusatzbezeichnungen-select" multiple size="8">
+                                    <option value="">Bitte wählen</option>
+                                    <option value="Akupunktur">Akupunktur</option>
+                                    <option value="Allergologie">Allergologie</option>
+                                    <option value="Andrologie">Andrologie</option>
+                                    <option value="Arzneimitteltherapiesicherheit">Arzneimitteltherapiesicherheit (AMTS)</option>
+                                    <option value="Balneologie und Medizinische Klimatologie">Balneologie und Medizinische Klimatologie</option>
+                                    <option value="Betriebsmedizin">Betriebsmedizin</option>
+                                    <option value="Bildungsmanagement im Gesundheitswesen">Bildungsmanagement im Gesundheitswesen</option>
+                                    <option value="Diabetologie">Diabetologie</option>
+                                    <option value="Ernährungsmedizin">Ernährungsmedizin</option>
+                                    <option value="Flugmedizin">Flugmedizin</option>
+                                    <option value="Forensische Medizin">Forensische Medizin</option>
+                                    <option value="Geriatrie">Geriatrie</option>
+                                    <option value="Gesundheitsförderung und Prävention">Gesundheitsförderung und Prävention</option>
+                                    <option value="Historische Medizin">Historische Medizin</option>
+                                    <option value="Homöopathie">Homöopathie</option>
+                                    <option value="Hygiene und Umweltmedizin">Hygiene und Umweltmedizin</option>
+                                    <option value="Hämostaseologie">Hämostaseologie</option>
+                                    <option value="Infektiologie">Infektiologie</option>
+                                    <option value="Intensivmedizin">Intensivmedizin</option>
+                                    <option value="Kinder-Endokrinologie und -Diabetologie">Kinder-Endokrinologie und -Diabetologie</option>
+                                    <option value="Kinder-Gastroenterologie">Kinder-Gastroenterologie</option>
+                                    <option value="Kinder-Hämatologie und -Onkologie">Kinder-Hämatologie und -Onkologie</option>
+                                    <option value="Kinder-Infektiologie">Kinder-Infektiologie</option>
+                                    <option value="Kinder-Kardiologie">Kinder-Kardiologie</option>
+                                    <option value="Kinder-Nephrologie">Kinder-Nephrologie</option>
+                                    <option value="Kinder-Pneumologie">Kinder-Pneumologie</option>
+                                    <option value="Kinder-Rheumatologie">Kinder-Rheumatologie</option>
+                                    <option value="Klinische Akut- und Notfallmedizin">Klinische Akut- und Notfallmedizin</option>
+                                    <option value="Klinische Genetik">Klinische Genetik</option>
+                                    <option value="Klinische Pharmakologie">Klinische Pharmakologie</option>
+                                    <option value="Komplementärmedizin">Komplementärmedizin</option>
+                                    <option value="Manuelle Medizin/Chirotherapie">Manuelle Medizin/Chirotherapie</option>
+                                    <option value="Medizin im Krankenhausmanagement">Medizin im Krankenhausmanagement</option>
+                                    <option value="Medizinische Genetik">Medizinische Genetik</option>
+                                    <option value="Medizinische Informatik">Medizinische Informatik</option>
+                                    <option value="Medizinische Tumortherapie">Medizinische Tumortherapie</option>
+                                    <option value="Naturheilverfahren">Naturheilverfahren</option>
+                                    <option value="Notfallmedizin">Notfallmedizin</option>
+                                    <option value="Orthomolekulare Medizin">Orthomolekulare Medizin</option>
+                                    <option value="Palliativmedizin">Palliativmedizin</option>
+                                    <option value="Pharmakologie">Pharmakologie</option>
+                                    <option value="Physikalische Therapie und Balneologie">Physikalische Therapie und Balneologie</option>
+                                    <option value="Präventionsmedizin">Präventionsmedizin</option>
+                                    <option value="Psychosomatische Grundversorgung">Psychosomatische Grundversorgung</option>
+                                    <option value="Psychotraumatologie">Psychotraumatologie</option>
+                                    <option value="Reisemedizin">Reisemedizin</option>
+                                    <option value="Schlafmedizin">Schlafmedizin</option>
+                                    <option value="Sexualmedizin">Sexualmedizin</option>
+                                    <option value="Sozialmedizin">Sozialmedizin</option>
+                                    <option value="Spezielle Schmerztherapie">Spezielle Schmerztherapie</option>
+                                    <option value="Sportmedizin">Sportmedizin</option>
+                                    <option value="Suchtmedizinische Grundversorgung">Suchtmedizinische Grundversorgung</option>
+                                    <option value="Tropenmedizin">Tropenmedizin</option>
+                                    <option value="Umweltmedizin">Umweltmedizin</option>
+                                    <option value="Verkehrsmedizin">Verkehrsmedizin</option>
+                                    <option value="Versicherungsmedizin">Versicherungsmedizin</option>
+                                    <option value="Vertrauensärztliche Tätigkeit">Vertrauensärztliche Tätigkeit</option>
+                                    <option value="Ärztliche Begutachtung">Ärztliche Begutachtung</option>
+                                    <option value="Ärztliches Qualitätsmanagement">Ärztliches Qualitätsmanagement</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Zusatzqualifikation</label>
+                        <div class="control">
+                            <input class="input autocomplete" type="text" name="zusatzqualifikation" 
+                                data-autocomplete="true" data-multiple-values="true" 
+                                placeholder="Beginnen Sie zu tippen...">
+                        </div>
+                    </div>
+                </div>
+
+
+                    </div>
+
+
+                    
+
+                            </div>
+                        </div>
+                        </div>
+
+                    </div>
+
+                    
+                
+                <!-- Fachliche Qualifikationen -->
+                <div class="form-section">
+                    <h2 class="subtitle">
+                        <i class="fas fa-graduation-cap mr-2"></i>Fachliche Qualifikationen
+                    </h2>
+                    <div class="field">
+                        <label class="label">Berufliche Schwerpunkte im Interview</label>
+                        <div class="control">
+                            <textarea class="textarea" name="interview_schwerpunkte"></textarea>
+                        </div>
+                    </div>
+
+<h2 class="title is-4">Wünsche an den neuen Job</h2>
+<div class="field">
+  <label class="label">Wünsche an den neuen Job</label>
+  <div   class="control">
+    <input name="wuensche_an_den_job" class="input" type="text">
+  </div>
+</div>
+
+<div class="field">
+  <label class="label">Berufliche Erfahrung & Qualifikationen</label>
+  <div class="control">
+    <textarea class="textarea" name="berufliche_erfahrung"></textarea>
+  </div>
+</div>
+
+                <!-- Bisheriger Arbeitgeber -->
+                <div class="form-section">
+                    <h2 class="subtitle">
+                        <i class="fas fa-building mr-2"></i>Bisheriger Arbeitgeber
+                    </h2>
+                    <div class="field">
+                        <label class="label">Art des Arbeitgebers</label>
+                        <div class="control">
+                            <div class="select">
+                                <select name="arbeitgeber_art">
+                                    <option value="">Bitte wählen</option>
+                                    <option value="Start-Up">Start-Up</option>
+                                    <option value="Kleinunternehmen">Kleinunternehmen</option>
+                                    <option value="Mittelstand">Mittelstand</option>
+                                    <option value="Konzern">Konzern</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Name des Arbeitgebers</label>
+                        <div class="control">
+                            <input class="input" type="text" name="arbeitgeber_name">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Standort</label>
+                        <div class="control has-icons-right">
+                            <input class="input" type="text" name="arbeitgeber_standort" id="arbeitgeber_standort">
+                        </div>
+                    </div>
+                    <!-- <div class="field"> -->
+                    <!--     <label class="label">Aktuelle berufliche Lage des Arbeitnehmers</label> -->
+                    <!--     <div class="control"> -->
+                    <!--         <input class="input" type="text" name="arbeitgeber_lage"> -->
+                    <!--     </div> -->
+                    <!-- </div> -->
+                </div>
+                
+                <!-- Kandidatenstatus -->
+                <!-- <div class="form-section"> -->
+                <!--     <h2 class="subtitle"> -->
+                <!--         <i class="fas fa-clipboard-check mr-2"></i>Kandidatenstatus -->
+                <!--     </h2> -->
+                <!--     <div class="field"> -->
+                <!--         <label class="label">Ist der Kandidat aktiv auf der Suche?</label> -->
+                <!--         <div class="control"> -->
+                <!--             <label class="radio"> -->
+                <!--                 <input type="radio" name="aktiv_suche" value="ja" checked>Ja -->
+                <!--             </label> -->
+                <!--             <label class="radio"> -->
+                <!--                 <input type="radio" name="aktiv_suche" value="nein">Nein -->
+                <!--             </label> -->
+                <!--         </div> -->
+                <!--     </div> -->
+                <!--     <div class="field"> -->
+                <!--         <label class="label">Ist der Kandidat aktiv in Bewerbungsprozessen?</label> -->
+                <!--         <div class="control"> -->
+                <!--             <label class="radio"> -->
+                <!--                 <input type="radio" name="aktiv_bewerbung" value="ja" checked>Ja -->
+                <!--             </label> -->
+                <!--             <label class="radio"> -->
+                <!--                 <input type="radio" name="aktiv_bewerbung" value="nein">Nein -->
+                <!--             </label> -->
+                <!--         </div> -->
+                <!--     </div> -->
+                <!--     <div class="field"> -->
+                <!--         <label class="label">Arbeitet der Kandidat mit weiteren Personalvermittlungen zusammen?</label> -->
+                <!--         <div class="control"> -->
+                <!--             <label class="radio"> -->
+                <!--                 <input type="radio" name="weitere_personalvermittlungen" value="ja" checked>Ja -->
+                <!--             </label> -->
+                <!--             <label class="radio"> -->
+                <!--                 <input type="radio" name="weitere_personalvermittlungen" value="nein">Nein -->
+                <!--             </label> -->
+                <!--         </div> -->
+                <!--     </div> -->
+                <!-- </div> -->
+                
+                <!-- Wohnort und Radius -->
+                <!-- <div class="form-section"> -->
+                <!--     <h2 class="subtitle"> -->
+                <!--         <i class="fas fa-map-marker-alt mr-2"></i>Standort & Erreichbarkeit -->
+                <!--     </h2> -->
+                <!--     <!-- Wohnort: PLZ und Stadt nebeneinander --> 
+                <!--     <div class="columns"> -->
+                <!--         <div class="column"> -->
+                <!--             <div class="field"> -->
+                <!--                 <label class="label">PLZ</label> -->
+                <!--                 <div class="control"> -->
+                <!--                     <input class="input" type="text" name="wohnort_plz" id="wohnort_plz"> -->
+                <!--                 </div> -->
+                <!--             </div> -->
+                <!--         </div> -->
+
+                      <div class="column">
+                          <div class="field">
+                              <label class="label">Wohnort (Stadt)</label>
+                              <div class="control">
+                                  <input class="input" type="text" name="wohnort" id="wohnort">
+                              </div>
+                          </div>
+                      </div>
+                <!--     </div> -->
+                <!--      -->
+                <!--     <!-- Radius-Auswahl für Nearby Search --> 
+                <!--     <div class="field"> -->
+                <!--         <label class="label">Radius (km)</label> -->
+                <!--         <div class="control"> -->
+                <!--             <div class="select"> -->
+                <!--                 <select id="radius_select" name="radius"> -->
+                <!--                     <option value="5000">5 km</option> -->
+                <!--                     <option value="10000">10 km</option> -->
+                <!--                     <option value="15000">15 km</option> -->
+                <!--                     <option value="20000">20 km</option> -->
+                <!--                     <option value="25000">25 km</option> -->
+                <!--                     <option value="30000">30 km</option> -->
+                <!--                     <option value="35000">35 km</option> -->
+                <!--                     <option value="40000">40 km</option> -->
+                <!--                     <option value="45000">45 km</option> -->
+                <!--                     <option value="50000">50 km</option> -->
+                <!--                     <option value="55000">55 km</option> -->
+                <!--                     <option value="60000">60 km</option> -->
+                <!--                 </select> -->
+                <!--             </div> -->
+                <!--         </div> -->
+                <!--     </div> -->
+                <!--      -->
+                <!--     <!-- Karte --> 
+                <!--     <div id="map" class="mb-4"></div> -->
+                    
+                    <!-- Erreichbare Städte - NEUER BEREICH MIT STÄDTE-EDITOR -->
+
+          <div class="form-section">
+                <h3 class="subtitle">
+                    <i class="fas fa-city"></i>Erreichbare Städte
+                </h3>
+                
+                <div class="field">
+                    <label class="label">Städte bearbeiten</label>
+                    
+                    <!-- Container für die Liste der Städte mit Tags -->
+                    <div id="stadtTags" class="tags-container tags are-medium">
+                        <!-- Tags will be added here dynamically -->
+                    </div>
+                    
+                    <!-- Eingabefeld und Button zum Hinzufügen -->
+                    <div class="field has-addons">
+                        <div class="control is-expanded">
+                            <input id="stadtInput" class="input" type="text" placeholder="Neue Stadt hinzufügen...">
+                        </div>
+                        <div class="control">
+                            <button id="stadtHinzufugen" type="button" class="button is-info">
+                                <span class="icon">
+                                    <i class="fas fa-plus"></i>
+                                </span>
+                                <span>Hinzufügen</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Verstecktes Textarea für die Speicherung der Städteliste -->
+                    <textarea class="textarea is-hidden" id="erreichbare_stadtname" name="erreichbare_stadtname">München, Frankfurt, Berlin</textarea>              
+                        <!-- Info-Meldung -->
+                        <p class="help">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Die Städteliste wird automatisch basierend auf dem Wohnort und Radius generiert. 
+                            Du kannst hier Städte manuell hinzufügen oder entfernen.
+                        </p>
+                    </div>
+                    
+                    <!-- Weitere Standort-bezogene Felder -->
+                </div>
+                
+                <!-- Arbeitspräferenzen -->
+                <div class="form-section">
+                    <h2 class="subtitle">
+                        <i class="fas fa-sliders-h mr-2"></i>Arbeitspräferenzen
+                    </h2>
+                    <div class="field">
+                        <label class="label">Aktuell Home-Office?</label>
+                        <div class="control">
+                            <label class="radio">
+                                <input type="radio" name="home_office_aktuell" value="ja" checked>Ja
+                            </label>
+                            <label class="radio">
+                                <input type="radio" name="home_office_aktuell" value="nein">Nein
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Home-Office gewünscht?</label>
+                        <div class="control">
+                            <label class="radio">
+                                <input type="radio" name="home_office_gewuenscht" value="ja" checked>Ja
+                            </label>
+                            <label class="radio">
+                                <input type="radio" name="home_office_gewuenscht" value="nein">Nein
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Welches Verkehrsmittel wird genutzt?</label>
+                        <div class="control">
+                            <div class="select">
+                                <select name="verkehrsmittel">
+                                    <option value="">Bitte wählen</option>
+                                    <!-- <option value="PKW">PKW</option> -->
+                                    <option value="Öffentliche Verkehrsmittel">Öffentliche Verkehrsmittel</option>
+                                    <option value="Fahrrad">Fahrrad</option>
+                                    <option value="Zu Fuß">Zu Fuß</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- <div class="field"> -->
+                    <!--     <label class="label">Gleitzeit gewünscht?</label> -->
+                    <!--     <div class="control"> -->
+                    <!--         <label class="radio"> -->
+                    <!--             <input type="radio" name="gleitzeit" value="ja" checked>Ja -->
+                    <!--         </label> -->
+                    <!--         <label class="radio"> -->
+                    <!--             <input type="radio" name="gleitzeit" value="nein">Nein -->
+                    <!--         </label> -->
+                    <!--     </div> -->
+                    <!-- </div> -->
+                    <div class="field">
+                        <label class="label">Flexible Arbeitszeiten gewünscht?</label>
+                        <div class="control">
+                            <label class="radio">
+                                <input type="radio" name="flexible_arbeitszeiten" value="ja" checked>Ja
+                            </label>
+                            <label class="radio">
+                                <input type="radio" name="flexible_arbeitszeiten" value="nein">Nein
+                            </label>
+                        </div>
+                    </div>
+
+<div class="field">
+  <label class="label">Umzugsbereitschaft</label>
+  <div class="control">
+    <div class="select">
+      <select name="umzugsbereit[]">
+        <option value="">Bitte wählen</option>
+        <option value="Ja">Ja</option>
+        <option value="Deutschlandweit">Deutschlandweit</option>
+        <option value="International">International</option>
+        <option value="Regional">Regional</option>
+        <option value="Mit Unterstützung">Mit Unterstützung</option>
+        <option value="Nach Absprache">Nach Absprache</option>
+        <option value="Teilweise">Teilweise</option>
+        <option value="Noch unentschlossen">Noch unentschlossen</option>
+        <option value="Nein">Nein</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- Wunschklinik -->
+<div class="field">
+  <label class="label">Wunschklinik</label>
+  <div class="control">
+    <input class="input" type="text" name="wunschklinik" />
+  </div>
+</div>
+
+<!-- Wechselkommitment (von 1–10) -->
+<div class="field">
+  <label class="label">Wechselkommitment (von 1–10)</label>
+  <div class="control">
+    <div class="select">
+      <select name="wechselkommitment">
+        <option value="">Bitte wählen</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+        <option value="9">9</option>
+        <option value="10">10</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- Berufliche Ziele -->
+<div class="field">
+  <label class="label">Berufliche Ziele</label>
+  <div class="control">
+    <textarea class="textarea" name="berufliche_ziele"></textarea>
+  </div>
+</div>
+
+<!-- Private Ziele -->
+<div class="field">
+  <label class="label">Private Ziele</label>
+  <div class="control">
+    <textarea class="textarea" name="private_ziele"></textarea>
+  </div>
+</div>
+
+<!-- Sonstiges -->
+<div class="field">
+  <label class="label">Sonstiges</label>
+  <div class="control">
+    <textarea class="textarea" name="sonstiges"></textarea>
+  </div>
+</div>
+
+<!-- Umgang mit Rückschlägen -->
+<div class="field">
+  <label class="label">Umgang mit Rückschlägen</label>
+  <div class="control">
+    <textarea class="textarea" name="umgang_mit_rueckschlaegen"></textarea>
+  </div>
+</div>
+
+<!-- Weiterentwicklung -->
+<div class="field">
+  <label class="label">Weiterentwicklung</label>
+  <div class="control">
+    <textarea class="textarea" name="weiterentwicklung"></textarea>
+  </div>
+</div>
+
+<!-- Finanzielle Motivation -->
+<div class="field">
+  <label class="label">Finanzielle Motivation</label>
+  <div class="control">
+    <textarea class="textarea" name="finanzielle_motivation"></textarea>
+  </div>
+</div>
+
+<!-- Erfolgsmethodik & KPIs -->
+<div class="field">
+  <label class="label">Erfolgsmethodik & KPIs</label>
+  <div class="control">
+    <textarea class="textarea" name="erfolgsmethodik_kpis"></textarea>
+  </div>
+</div>
+
+
+
+                    <div class="field">
+                        <label class="label">Anstellungsart</label>
+                        <div class="control">
+                            <div class="select">
+                                <select name="anstellungsart">
+                                    <option value="">Bitte wählen</option>
+                                    <option value="Vollzeit">Vollzeit</option>
+                                    <option value="Teilzeit">Teilzeit</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gehaltsinformationen -->
+                <div class="form-section">
+                    <h2 class="subtitle">
+                        <i class="fas fa-euro-sign mr-2"></i>Gehaltsinformationen
+                    </h2>
+                    <div class="field">
+                        <label class="label">Aktuelles Gehalt</label>
+                        <div class="control">
+<input class="input" type="text" name="current_salary_display" id="current_salary_display" inputmode="numeric" pattern="\d*">
+<input type="hidden" name="current_salary" id="current_salary">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Wunschgehalt</label>
+                        <div class="control">
+
+<input class="input" type="text" name="expected_salary_display" id="expected_salary_display" inputmode="numeric" pattern="\d*">
+
+<input type="hidden" name="expected_salary" id="expected_salary">
+
+                        </div>
+                    </div>
+                    <!-- <div class="field"> -->
+                    <!--     <label class="label">Soll das Gehalt erhöht werden?</label> -->
+                    <!--     <div class="control"> -->
+                    <!--         <label class="radio"> -->
+                    <!--             <input type="radio" name="gehalt_erhoehen" value="ja" checked>Ja -->
+                    <!--         </label> -->
+                    <!--         <label class="radio"> -->
+                    <!--             <input type="radio" name="gehalt_erhoehen" value="nein">Nein -->
+                    <!--         </label> -->
+                    <!--     </div> -->
+                    <!-- </div> -->
+                </div>
+                
+                <!-- <!-- Informationen zum künftigen Job --> 
+                <!-- <div class="form-section"> -->
+                <!--     <h2 class="subtitle"> -->
+                <!--         <i class="fas fa-briefcase mr-2"></i>Informationen zum künftigen Job -->
+                <!--     </h2> -->
+                    <div class="field">
+                        <label class="label">Wechselmotivation</label>
+                        <div class="control">
+                            <textarea class="textarea autocomplete" name="wechselmotivation" 
+                                      data-autocomplete="true" 
+                                      placeholder="Beginnen Sie zu tippen..."></textarea>
+                        </div>
+                <!--         <p class="help"> -->
+                <!--             <i class="fas fa-lightbulb mr-1"></i> -->
+                <!--             Tipps werden während der Eingabe angezeigt. -->
+                <!--         </p> -->
+                <!--     </div> -->
+                <!--     <div class="field"> -->
+                <!--         <label class="label">Extras (Interview-Notes)</label> -->
+                <!--         <div class="control"> -->
+                <!--             <textarea class="textarea" name="job_extras"></textarea> -->
+                <!--         </div> -->
+                <!--     </div> -->
+                <!--     <!-- <div class="field"> -->
+                <!--     <!--     <label class="label">In welche Unternehmen will der Kandidat?</label> -->
+                <!--     <!--     <div class="control"> --> 
+                <!--     <!--         <input class="input" type="text" name="unternehmen_wahl" placeholder="z.B. Startup, KMU, Konzern"> --> 
+                <!--     <!--     </div> --> 
+                <!--     <!-- </div> --> 
+                <!--     <div class="field"> -->
+                <!--         <label class="label">Offen für unsere Key-Clients?</label> -->
+                <!--         <div class="control"> -->
+                <!--             <input class="input" type="text" name="key_clients" placeholder="z.B. Kunde 1, Kunde 2"> -->
+                <!--         </div> -->
+                <!--     </div> -->
+                <!--     <div class="field"> -->
+                <!--         <label class="label">Bitte nicht an:</label> -->
+                <!--         <div class="control"> -->
+                <!--             <input class="input" type="text" name="nicht_an" placeholder="z.B. Kunde 1, Kunde 2"> -->
+                <!--         </div> -->
+                <!--     </div> -->
+                <!--     <div class="field"> -->
+                <!--         <label class="label">An wen soll der Kandidat auf jeden Fall geschickt werden?</label> -->
+                <!--         <div class="control"> -->
+                <!--             <input class="input" type="text" name="soll_auf_jeden_fall" placeholder="z.B. Kunde 1, Kunde 2"> -->
+                <!--         </div> -->
+                <!--     </div> -->
+                <!--     <div class="field"> -->
+                <!--         <label class="label">Aktueller Prozess (Interview-Notes)</label> -->
+                <!--         <div class="control"> -->
+                <!--             <textarea class="textarea" name="current_process"></textarea> -->
+                <!--         </div> -->
+                <!--     </div> -->
+                <!-- </div> -->
+                
+                <!-- Vertragliche Details -->
+                <div class="form-section">
+                    <h2 class="subtitle">
+                        <i class="fas fa-file-contract mr-2"></i>Vertragliche Details
+                    </h2>
+                    <div class="field">
+                        <label class="label">Kündigungsfrist</label>
+                        <div class="control">
+                            <div class="select">
+                                <select name="kuendigungsfrist">
+                                    <option value="">Bitte wählen</option>
+                                    <option value="1 Jahr zum Monatsende">1 Jahr zum Monatsende</option>
+                                    <option value="1 Monat zur Monatsmitte">1 Monat zur Monatsmitte</option>
+                                    <option value="1 Woche zum Monatsende">1 Woche zum Monatsende</option>
+                                    <option value="2 Monate zum 15.">2 Monate zum 15.</option>
+                                    <option value="2 Monate zum Monatsende">2 Monate zum Monatsende</option>
+                                    <option value="2 Wochen zum Monatsende">2 Wochen zum Monatsende</option>
+                                    <option value="2 Wochen zur Monatsmitte">2 Wochen zur Monatsmitte</option>
+                                    <option value="3 Monate zum Quartalsende">3 Monate zum Quartalsende</option>
+                                    <option value="4 Wochen zum 15.">4 Wochen zum 15.</option>
+                                    <option value="4 Wochen zum Monatsende">4 Wochen zum Monatsende</option>
+                                    <option value="6 Monate">6 Monate</option>
+                                    <option value="6 Wochen zum Quartalsende">6 Wochen zum Quartalsende</option>
+                                    <option value="Abhängig von der aktuellen Beschäftigungsdauer">Abhängig von der aktuellen Beschäftigungsdauer</option>
+                                    <option value="Bis Vertragsende">Bis Vertragsende</option>
+                                    <option value="Individuell verhandelbar">Individuell verhandelbar</option>
+                                    <option value="Kündigungsfrist unklar">Kündigungsfrist unklar</option>
+                                    <option value="Nach Absprache mit aktuellem Arbeitgeber">Nach Absprache mit aktuellem Arbeitgeber</option>
+                                    <option value="Probezeitregelung (z. B. 2 Wochen)">Probezeitregelung (z. B. 2 Wochen)</option>
+                                    <option value="Sofort kündbar (keine Kündigungsfrist)">Sofort kündbar (keine Kündigungsfrist)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- <div class="field"> -->
+                    <!--     <label class="label">Wahrscheinlichkeit auf einen Aufhebungsvertrag</label> -->
+                    <!--     <div class="control"> -->
+                    <!--         <div class="select"> -->
+                    <!--             <select name="aufhebungsvertrag_wahrscheinlichkeit"> -->
+                    <!--                 <option value="">Bitte wählen</option> -->
+                    <!--                 <option value="Sehr hoch">Sehr hoch</option> -->
+                    <!--                 <option value="Gering">Gering</option> -->
+                    <!--                 <option value="Ausgeschlossen">Ausgeschlossen</option> -->
+                    <!--             </select> -->
+                    <!--         </div> -->
+                    <!--     </div> -->
+                    <!-- </div> -->
+                    <div class="field">
+                        <label class="label">Ab wann ist der Kandidat verfügbar?</label>
+                        <div class="control">
+                            <input class="input" type="date" name="verfuegbar_ab">
+                        </div>
+                    </div>
+                    
+                    <!-- <div class="form-section"> -->
+                    <!--     <h2 class="subtitle"> -->
+                    <!--         <i class="fas fa-calendar-alt mr-2"></i>Bewerbungsfrist -->
+                    <!--     </h2> -->
+                    <!--     <div class="field"> -->
+                    <!--         <label class="label">CV wird zugeschickt bis zum</label> -->
+                    <!--         <div class="control"> -->
+                    <!--             <input class="input" type="date" name="cv_submission_deadline"> -->
+                    <!--         </div> -->
+                    <!--     </div> -->
+                    <!-- </div> -->
+
+                <!-- Submit-Button -->
+                <div class="field is-grouped mt-5">
+                    <div class="control">
+                        <button id="submitButton" class="button is-primary is-large" type="button">
+                            <span class="icon">
+                                <i class="fas fa-paper-plane"></i>
+                            </span>
+                            <span>Kandidaten speichern</span>
+                        </button>
+                    </div>
+                </div>
+                </form>
+                </div>
+                </section>
+
+                
+
+    <!-- Footer -->
+    <footer class="footer" style="background-color: #f5f9fa; padding: 2rem 0; margin-top: 2rem;">
+        <div class="container">
+            <div class="columns">
+                <div class="column">
+                    <p class="has-text-weight-bold">© 2017-2025 emploio GmbH. All rights reserved</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bestätigungs-Popup -->
+    <div id="confirmPopup" class="popup">
+        <div class="popup-content">
+            <div class="has-text-centered mb-4">
+                <i class="fas fa-question-circle" style="font-size: 3rem; color: #00A19A;"></i>
+            </div>
+            <h2 class="title is-4 has-text-centered">Bestätigung</h2>
+            <p class="has-text-centered mb-5">Sicher? Sind alle Daten korrekt?</p>
+            <div class="has-text-centered is-flex is-justify-content-center">
+                <button id="confirmYes" class="button is-primary mx-2">Ja</button>
+                <button id="confirmNo" class="button is-light mx-2">Nein</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup für Erfolgsmeldung -->
+    <div id="erfolgsPopup" class="popup">
+        <div class="popup-content">
+            <span class="close-popup" onclick="closePopup()">&times;</span>
+            <div class="has-text-centered mb-4">
+                <i class="fas fa-check-circle" style="font-size: 3rem; color: #00A19A;"></i>
+            </div>
+            <h2 class="title is-4 has-text-centered">Erfolg!</h2>
+            <p id="erfolgsNachricht" class="has-text-centered mb-4">Die Daten wurden erfolgreich gespeichert.</p>
+            <div class="has-text-centered">
+                <button class="button is-primary" onclick="closePopup()">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- … ganz am Ende deiner HTML (vor </body>) --------------- -->
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+
+<script>
+/* Tom-Select erst hier erstellen – und die Instanz-Variablen exportieren,
+   damit recruitcrm-api.js sie später findet                            */
+window.tsFach = new TomSelect('#fachbereiche-select', {
+  plugins: ['remove_button'],
+  maxItems: null,
+  create: false,
+  persist: false,
+  hideSelected: true,
+  placeholder: "Fachbereiche auswählen…"
+});
+
+window.tsZusatz = new TomSelect('#zusatzbezeichnungen-select', {
+  plugins: ['remove_button'],
+  maxItems: null,
+  create: false,
+  persist: false,
+  hideSelected: true,
+  placeholder: "Zusatzbezeichnungen auswählen…"
+});
+</script>
+<!-- ----------------------------------------------------------------- -->
+
+    <!-- Inline Bootstrap Loader: Lädt u.a. "maps", "marker", "geometry", "drawing", "places" -->
+    <script>
+      (g => {
+        var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;
+        b=b[c]||(b[c]={});
+        var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,
+        u=()=>h||(h=new Promise(async(f,n)=>{
+          await(a=m.createElement("script"));
+          r.add("maps"); r.add("marker"); r.add("geometry"); r.add("drawing"); r.add("places");
+          e.set("libraries",[...r]+"");
+          e.set("key","AIzaSyAncp40bvgjD0TW5dbFNJ_nKcIQHABmBGQ");
+          e.set("v","weekly");
+          e.set("callback",c+".maps."+q);
+          a.src=`https://maps.googleapis.com/maps/api/js?`+e;
+          d[q]=f;
+          a.onerror=()=>h?n(Error(p+" could not load.")):null;
+          a.nonce=m.querySelector("script[nonce]")?.nonce||"";
+          m.head.append(a);
+        }));
+        d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))
+      })({});
+    </script>
+    
+    <!-- Make sure suggestion database is loaded and initialized before autocomplete.js -->
+    <script src="/static/js/suggestion-db.js"></script>
+    <script>
+        // Check if database loaded correctly and make it available on window
+        (function() {
+            // If suggestionDatabase exists but isn't attached to window
+            if (typeof suggestionDatabase !== 'undefined' && typeof window.suggestionDatabase === 'undefined') {
+                window.suggestionDatabase = suggestionDatabase;
+                console.log('Copied suggestion database to window object');
+            }
+            
+            // Log the database availability
+            if (typeof window.suggestionDatabase !== 'undefined') {
+                console.log('Suggestion database is available with ' + Object.keys(window.suggestionDatabase).length + ' keys');
+            } else {
+                console.error('Suggestion database is still not available on window object');
+            }
+        })();
+    </script>
+
+<!-- Only load autocomplete after the database is confirmed available -->
+<script src="/static/js/autocomplete.js"></script>
+        
+    <!-- Autocomplete-Funktionalität -->
+    <script src="/static/js/autocomplete.js"></script>
+    <script src="/static/js/suggestion-db.js"></script>
+
+    <!-- Bestehendes script.js -->
+    <script src="/static/js/script.js"></script>
+      
+
+    <!-- Arbeitgeber-Standort Autocomplete -->
+    <script src="/static/js/arbeitgeber-standort-autocomplete.js"></script>
+
+    <!-- PLZ-Priorität -->
+    <script src="/static/js/plz-priority.js"></script>
+
+    <!-- RecruitCRM API Integration -->
+    <!-- <script src="/static/js/recruitcrm-api.js"></script> -->
+
+    <!-- Interview-Verfügbarkeiten JavaScript -->
+    <script src="/static/js/interview-availability.js"></script>
+
+    <!-- AJAX-Formularübermittlung -->
+    <script>
+    // Funktion zum Anzeigen des Popups
+    function showPopup(popupId) {
+        document.getElementById(popupId).style.display = 'block';
+    }
+
+    // Funktion zum Schließen des Popups
+    function closePopup(popupId) {
+        document.getElementById(popupId || 'erfolgsPopup').style.display = 'none';
+    }
+
+    // Formular absenden
+    // function submitForm() {
+    //     const form = document.getElementById('kandidatenForm');
+    //     const fd   = new FormData(form);
+    //     
+    //     // FormData-Objekt erstellen
+    //     const formData = new FormData(form);
+    //
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         if (data.status === 'success') {
+    //             document.getElementById('erfolgsNachricht').textContent = data.message;
+    //             showPopup('erfolgsPopup');
+    //             // Optional: Formular zurücksetzen
+    //             // form.reset();
+    //         } else {
+    //             document.getElementById('erfolgsNachricht').textContent = 'Fehler beim Speichern der Daten. Bitte versuche es erneut.';
+    //             showPopup('erfolgsPopup');
+    //         }
+    //     })
+    //     .catch(error => {
+    //         console.error('Fehler:', error);
+    //         document.getElementById('erfolgsNachricht').textContent = 'Ein Fehler ist aufgetreten. Bitte versuche es später erneut.';
+    //         showPopup('erfolgsPopup');
+    //     });
+    // }
+
+    // AJAX-Formularübermittlung
+    // document.addEventListener('DOMContentLoaded', function() {
+    //     // Submit-Button Handler
+    //     const submitButton = document.getElementById('submitButton');
+    //     
+    //     if (submitButton) {
+    //         submitButton.addEventListener('click', function() {
+    //             showPopup('confirmPopup');
+    //         });
+    //     }
+    //     
+    //     // Bestätigungspopup Ja/Nein Handler
+    //     const confirmYesButton = document.getElementById('confirmYes');
+    //     const confirmNoButton = document.getElementById('confirmNo');
+    //     
+    //     if (confirmYesButton) {
+    //         confirmYesButton.addEventListener('click', function() {
+    //             closePopup('confirmPopup');
+    //             submitForm();
+    //         });
+    //     }
+    //     
+    //     if (confirmNoButton) {
+    //         confirmNoButton.addEventListener('click', function() {
+    //             closePopup('confirmPopup');
+    //         });
+    //     }
+    //     
+    //     // Schließen-Button für Erfolgs-Popup
+    //     document.querySelector('.close-popup').addEventListener('click', function() {
+    //         closePopup('erfolgsPopup');
+    //     });
+    // });
+    </script>
+
+  <script>
+// document.addEventListener("DOMContentLoaded", () => {
+//
+//   /* ------- Laden per ID -------- */
+//   const idInput = document.getElementById("kandidat_id");
+//   const loadBtn = document.getElementById("loadFromCRM");
+//
+//   loadBtn.addEventListener("click", async () => {
+//     const kid = idInput.value.trim();
+//     if (!kid) { alert("Bitte eine Kandidaten-ID eingeben!"); return; }
+//
+//     const r = await fetch(`/api/kandidat/${kid}`);
+//     if (!r.ok) return alert("Fehler beim Laden");
+//
+//
+//     fillForm(await r.json());
+//   });
+
+  /* ------- Speichern ---------- */
+  // const form = document.getElementById("kandidatenForm");
+  // form.removeAttribute("action");          // Browser-Submit verhindern
+  // form.addEventListener("submit", e => {
+  //   e.preventDefault();
+  //
+  //   const fd = new FormData(form);
+  //   fetch("/api/submit", { method:"POST", body:fd })
+  //     .then(r => r.json())
+  //     .then(res => alert(res.message || res.status))
+  //     .catch(console.error);
+  // });
+
+  /* ------- Hilfen ------------- */
+  // function fillForm(d){ document.getElementById("vorname").value = d.vorname || ""; }
+// });
+</script>
+<script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const stadtInput = document.getElementById("stadtInput");
+            const addBtn = document.getElementById("stadtHinzufugen");
+            const tagsContainer = document.getElementById("stadtTags");
+            const hiddenTextarea = document.getElementById("erreichbare_stadtname");
+            const hiddenPreview = document.getElementById("hiddenValuePreview");
+            
+            // Initial cities from hidden textarea
+            let cities = hiddenTextarea.value 
+                ? hiddenTextarea.value.split(',').map(city => city.trim()).filter(city => city)
+                : [];
+            
+            // Update hidden preview
+            function updateHiddenPreview() {
+                hiddenPreview.textContent = hiddenTextarea.value;
+            }
+            
+            // Render tags function - FIXED VERSION
+            function renderTags() {
+                // Clear only the tags, not the entire container
+                const existingTags = tagsContainer.querySelectorAll('.tag');
+                existingTags.forEach(tag => tag.remove());
+                
+                cities.forEach((city, index) => {
+                    const tag = document.createElement("span");
+                    tag.className = "tag is-info is-medium mr-2 mb-2";
+                    tag.innerHTML = `
+                        ${city}
+                        <button class="delete is-small ml-2" data-index="${index}"></button>
+                    `;
+                    tagsContainer.appendChild(tag);
+                });
+                
+                // Update hidden textarea value
+                hiddenTextarea.value = cities.join(', ');
+                updateHiddenPreview();
+            }
+            
+            // Add new city
+            function addCity(city) {
+                const trimmedCity = city.trim();
+                if (trimmedCity && !cities.includes(trimmedCity)) {
+                    cities.push(trimmedCity);
+                    renderTags();
+                    stadtInput.value = '';
+                }
+            }
+            
+            function removeCity(index) {
+                cities.splice(index, 1);
+                renderTags();
+            }
+            
+            // Initial render
+            renderTags();
+            
+            // Event listeners
+            addBtn.addEventListener("click", () => {
+                if (stadtInput.value) {
+                    addCity(stadtInput.value);
+                }
+            });
+            
+            stadtInput.addEventListener("keypress", (e) => {
+                if (e.key === "Enter" && stadtInput.value) {
+                    e.preventDefault();
+                    addCity(stadtInput.value);
+                }
+            });
+            
+            // FIXED EVENT LISTENER USING EVENT DELEGATION
+            tagsContainer.addEventListener("click", (e) => {
+                if (e.target.classList.contains("delete")) {
+                    const index = parseInt(e.target.getAttribute("data-index"));
+                    removeCity(index);
+                }
+                // Also handle if the click is on the SVG inside the button
+                else if (e.target.closest(".delete")) {
+                    const deleteButton = e.target.closest(".delete");
+                    const index = parseInt(deleteButton.getAttribute("data-index"));
+                    removeCity(index);
+                }
+            });
+            
+            // Save button
+            document.getElementById("saveButton").addEventListener("click", () => {
+                alert(`Daten gespeichert!\n\nErreichbare Städte: ${cities.join(', ')}\n\nVersteckter Wert: "${hiddenTextarea.value}"`);
+            });
+            
+            // Initialize hidden value preview
+            updateHiddenPreview();
+        });
+</script>
+
+<script>
+  function setupLinkPreview(inputId, buttonId) {
+    const input = document.getElementById(inputId);
+    const button = document.getElementById(buttonId);
+
+    function updateButton() {
+      const url = input.value.trim();
+      if (url && url.startsWith("http")) {
+        button.href = url;
+        button.style.display = "inline-block";
+      } else {
+        button.style.display = "none";
+      }
+    }
+
+    input.addEventListener("input", updateButton);
+    window.addEventListener("DOMContentLoaded", updateButton); // handle prefilled values
+  }
+
+  // Setup all three link previews
+  setupLinkPreview("linkedin_link", "open-linkedin");
+  setupLinkPreview("xing_link", "open-xing");
+  setupLinkPreview("cv_link", "open-cv");
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const brancheSelect = document.getElementById("branche-select");
+
+  const homeOfficeAktuellFeld = document
+    .querySelector('input[name="home_office_aktuell"]')
+    ?.closest(".field");
+
+  const homeOfficeGewuenschtFeld = document
+    .querySelector('input[name="home_office_gewuenscht"]')
+    ?.closest(".field");
+
+  const fieldsToToggle = [
+    "berufserfahrung",
+    "berufliche_ziele",
+    "private_ziele",
+    "relevante_berufserfahrung",
+    "umgang_mit_rueckschlaegen",
+    "weiterentwicklung",
+    "finanzielle_motivation",
+    "erfolgsmethodik_kpis"
+  ].map(name => document.querySelector(`[name="${name}"]`)?.closest(".field"));
+
+  function updateHomeOfficeFields() {
+    const selected = brancheSelect.value;
+    const isSales = selected.toLowerCase().includes("sales");
+
+    if (homeOfficeAktuellFeld)
+      homeOfficeAktuellFeld.style.display = isSales ? "block" : "none";
+
+    if (homeOfficeGewuenschtFeld)
+      homeOfficeGewuenschtFeld.style.display = isSales ? "block" : "none";
+
+    fieldsToToggle.forEach(field => {
+      if (field) field.style.display = isSales ? "block" : "none";
+    });
+  }
+
+  brancheSelect.addEventListener("change", updateHomeOfficeFields);
+  updateHomeOfficeFields(); // Initial call
+});
+</script>
+
+    </script>
+
+    <script>
+      
+document.addEventListener("DOMContentLoaded", function () {
+  const displayFields = [
+    {
+      display: document.getElementById("current_salary_display"),
+      hidden: document.getElementById("current_salary")
+    },
+    {
+      display: document.getElementById("expected_salary_display"),
+      hidden: document.getElementById("expected_salary")
+    }
+  ];
+
+  displayFields.forEach(({ display, hidden }) => {
+    if (!display || !hidden) return;
+
+    display.addEventListener("input", () => {
+      const rawValue = display.value.replace(/\D/g, ""); // Digits only
+      hidden.value = rawValue;
+      if (rawValue === "") {
+        display.value = "";
+      } else {
+        display.value = Number(rawValue).toLocaleString("de-DE");
+      }
+    });
+  });
+});
+    </script>
+
+<input type="hidden" name="avatar" value="https://example.com/avatar.jpg">
+
+<div class="field">
+    <label class="label">Avatar</label>
+    <figure class="image is-64x64">
+        <img src="https://example.com/avatar.jpg" alt="Avatar" style="border-radius: 50%;">
+    </figure>
+</div>
+
+</body>
+</html>
