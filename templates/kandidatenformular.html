@@ -118,7 +118,7 @@
                             <input class="input" type="text" name="nachname" id="nachname" required>
                         </div>
                     </div>
-                    
+
                     <div class="field">
                         <label class="label">Geschlecht</label>
                         <div class="control">
@@ -131,6 +131,13 @@
                                 </select>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="field">
+                      <label class="label">Berufserfahrung in Jahren</label>
+                      <div class="control">
+                        <input class="input" type="number" name="berufserfahrung_in_jahren">
+                      </div>
                     </div>
                     
                     <div class="field">
@@ -236,79 +243,157 @@
                             </div>
                         </div>
                     </div>
-                    <div class="field">
-                            <label class="label">Fachbereiche (Mehrfachauswahl möglich)</label>
-                            <div class="control">
-                                <select name="kategorie[]" id="fachbereiche-select" multiple size="8">
-                                    <option value="">Bitte wählen</option>
-                                    <option value="Allergologie">Allergologie</option>
-                                    <option value="Allgemeinmedizin">Allgemeinmedizin</option>
-                                    <option value="Angiologie">Angiologie</option>
-                                    <option value="Anästhesie">Anästhesie</option>
-                                    <option value="Arbeitsmedizin">Arbeitsmedizin</option>
-                                    <option value="Augenheilkunde">Augenheilkunde</option>
-                                    <option value="Chirurgie">Chirurgie</option>
-                                    <option value="Dermatologie und Venerologie">Dermatologie und Venerologie</option>
-                                    <option value="Diagnostische Radiologie">Diagnostische Radiologie</option>
-                                    <option value="Endokrinologie und Diabetologie">Endokrinologie und Diabetologie</option>
-                                    <option value="Forensische Pathologie">Forensische Pathologie</option>
-                                    <option value="Forensische Psychiatrie">Forensische Psychiatrie</option>
-                                    <option value="Frauenheilkunde und Geburtshilfe (Gynäkologie)">Frauenheilkunde und Geburtshilfe (Gynäkologie)</option>
-                                    <option value="Gastroenterologie">Gastroenterologie</option>
-                                    <option value="Gefäßchirurgie">Gefäßchirurgie</option>
-                                    <option value="Geriatrie">Geriatrie</option>
-                                    <option value="Hals-Nasen-Ohren-Heilkunde">Hals-Nasen-Ohren-Heilkunde</option>
-                                    <option value="Herzchirurgie">Herzchirurgie</option>
-                                    <option value="Homöopathie">Homöopathie</option>
-                                    <option value="Humangenetik">Humangenetik</option>
-                                    <option value="Hämatologie und internistische Onkologie">Hämatologie und internistische Onkologie</option>
-                                    <option value="Immunologie">Immunologie</option>
-                                    <option value="Infektiologie">Infektiologie</option>
-                                    <option value="Innere Medizin">Innere Medizin</option>
-                                    <option value="Intensivmedizin">Intensivmedizin</option>
-                                    <option value="Interventionelle Radiologie">Interventionelle Radiologie</option>
-                                    <option value="Kardiologie">Kardiologie</option>
-                                    <option value="Kinder- und Jugendmedizin">Kinder- und Jugendmedizin</option>
-                                    <option value="Kinder- und Jugendpsychiatrie und -psychotherapie">Kinder- und Jugendpsychiatrie und -psychotherapie</option>
-                                    <option value="Kinderchirurgie">Kinderchirurgie</option>
-                                    <option value="Kinderkardiologie">Kinderkardiologie</option>
-                                    <option value="Labormedizin">Labormedizin</option>
-                                    <option value="Mikrobiologie">Mikrobiologie</option>
-                                    <option value="Neonatologie">Neonatologie</option>
-                                    <option value="Nephrologie">Nephrologie</option>
-                                    <option value="Neurochirurgie">Neurochirurgie</option>
-                                    <option value="Neurologie">Neurologie</option>
-                                    <option value="Notfallmedizin">Notfallmedizin</option>
-                                    <option value="Nuklearmedizin">Nuklearmedizin</option>
-                                    <option value="Orthopädie und Unfallchirurgie">Orthopädie und Unfallchirurgie</option>
-                                    <option value="Palliativmedizin">Palliativmedizin</option>
-                                    <option value="Pathologie">Pathologie</option>
-                                    <option value="Pharmakologie und Toxikologie">Pharmakologie und Toxikologie</option>
-                                    <option value="Physikalische und Rehabilitative Medizin">Physikalische und Rehabilitative Medizin</option>
-                                    <option value="Plastische, Rekonstruktive und Ästhetische Chirurgie">Plastische, Rekonstruktive und Ästhetische Chirurgie</option>
-                                    <option value="Pneumologie">Pneumologie</option>
-                                    <option value="Psychiatrie und Psychotherapie">Psychiatrie und Psychotherapie</option>
-                                    <option value="Psychosomatische Medizin und Psychotherapie">Psychosomatische Medizin und Psychotherapie</option>
-                                    <option value="Radiologie">Radiologie</option>
-                                    <option value="Rechtsmedizin">Rechtsmedizin</option>
-                                    <option value="Reproduktionsmedizin">Reproduktionsmedizin</option>
-                                    <option value="Rheumatologie">Rheumatologie</option>
-                                    <option value="Schmerztherapie">Schmerztherapie</option>
-                                    <option value="Sexualmedizin">Sexualmedizin</option>
-                                    <option value="Sportmedizin">Sportmedizin</option>
-                                    <option value="Strahlentherapie">Strahlentherapie</option>
-                                    <option value="Thoraxchirurgie">Thoraxchirurgie</option>
-                                    <option value="Transfusionsmedizin">Transfusionsmedizin</option>
-                                    <option value="Tropenmedizin">Tropenmedizin</option>
-                                    <option value="Urologie">Urologie</option>
-                                    <option value="Virologie und Infektionsepidemiologie">Virologie und Infektionsepidemiologie</option>
-                                    <option value="Viszeralchirurgie">Viszeralchirurgie</option>
-                                    <option value="Zentrale Notaufnahme">Zentrale Notaufnahme</option>
-                                    <option value="Endoskopie">Endoskopie</option>
-                                </select>
-                                </div>
-                        </div>
 
+                    <div class="field" id="aktuelle-fachbereiche-select">
+                      <label class="label">Fachbereiche (Mehrfachauswahl möglich)</label>
+                      <div class="control">
+                        <div class="select">
+                          <select name="aktuelle_fachbereiche" >
+                            <option value="" disabled selected>Bitte wählen</option>
+                            <option value="Allergologie">Allergologie</option>
+                            <option value="Allgemeinmedizin">Allgemeinmedizin</option>
+                            <option value="Angiologie">Angiologie</option>
+                            <option value="Anästhesie">Anästhesie</option>
+                            <option value="Arbeitsmedizin">Arbeitsmedizin</option>
+                            <option value="Augenheilkunde">Augenheilkunde</option>
+                            <option value="Chirurgie">Chirurgie</option>
+                            <option value="Dermatologie und Venerologie">Dermatologie und Venerologie</option>
+                            <option value="Diagnostische Radiologie">Diagnostische Radiologie</option>
+                            <option value="Endokrinologie und Diabetologie">Endokrinologie und Diabetologie</option>
+                            <option value="Forensische Pathologie">Forensische Pathologie</option>
+                            <option value="Forensische Psychiatrie">Forensische Psychiatrie</option>
+                            <option value="Frauenheilkunde und Geburtshilfe (Gynäkologie)">Frauenheilkunde und Geburtshilfe (Gynäkologie)</option>
+                            <option value="Gastroenterologie">Gastroenterologie</option>
+                            <option value="Gefäßchirurgie">Gefäßchirurgie</option>
+                            <option value="Geriatrie">Geriatrie</option>
+                            <option value="Hals-Nasen-Ohren-Heilkunde">Hals-Nasen-Ohren-Heilkunde</option>
+                            <option value="Herzchirurgie">Herzchirurgie</option>
+                            <option value="Homöopathie">Homöopathie</option>
+                            <option value="Humangenetik">Humangenetik</option>
+                            <option value="Hämatologie und internistische Onkologie">Hämatologie und internistische Onkologie</option>
+                            <option value="Immunologie">Immunologie</option>
+                            <option value="Infektiologie">Infektiologie</option>
+                            <option value="Innere Medizin">Innere Medizin</option>
+                            <option value="Intensivmedizin">Intensivmedizin</option>
+                            <option value="Interventionelle Radiologie">Interventionelle Radiologie</option>
+                            <option value="Kardiologie">Kardiologie</option>
+                            <option value="Kinder- und Jugendmedizin">Kinder- und Jugendmedizin</option>
+                            <option value="Kinder- und Jugendpsychiatrie und -psychotherapie">Kinder- und Jugendpsychiatrie und -psychotherapie</option>
+                            <option value="Kinderchirurgie">Kinderchirurgie</option>
+                            <option value="Kinderkardiologie">Kinderkardiologie</option>
+                            <option value="Labormedizin">Labormedizin</option>
+                            <option value="Mikrobiologie">Mikrobiologie</option>
+                            <option value="Neonatologie">Neonatologie</option>
+                            <option value="Nephrologie">Nephrologie</option>
+                            <option value="Neurochirurgie">Neurochirurgie</option>
+                            <option value="Neurologie">Neurologie</option>
+                            <option value="Notfallmedizin">Notfallmedizin</option>
+                            <option value="Nuklearmedizin">Nuklearmedizin</option>
+                            <option value="Orthopädie und Unfallchirurgie">Orthopädie und Unfallchirurgie</option>
+                            <option value="Palliativmedizin">Palliativmedizin</option>
+                            <option value="Pathologie">Pathologie</option>
+                            <option value="Pharmakologie und Toxikologie">Pharmakologie und Toxikologie</option>
+                            <option value="Physikalische und Rehabilitative Medizin">Physikalische und Rehabilitative Medizin</option>
+                            <option value="Plastische, Rekonstruktive und Ästhetische Chirurgie">Plastische, Rekonstruktive und Ästhetische Chirurgie</option>
+                            <option value="Pneumologie">Pneumologie</option>
+                            <option value="Psychiatrie und Psychotherapie">Psychiatrie und Psychotherapie</option>
+                            <option value="Psychosomatische Medizin und Psychotherapie">Psychosomatische Medizin und Psychotherapie</option>
+                            <option value="Radiologie">Radiologie</option>
+                            <option value="Rechtsmedizin">Rechtsmedizin</option>
+                            <option value="Reproduktionsmedizin">Reproduktionsmedizin</option>
+                            <option value="Rheumatologie">Rheumatologie</option>
+                            <option value="Schmerztherapie">Schmerztherapie</option>
+                            <option value="Sexualmedizin">Sexualmedizin</option>
+                            <option value="Sportmedizin">Sportmedizin</option>
+                            <option value="Strahlentherapie">Strahlentherapie</option>
+                            <option value="Thoraxchirurgie">Thoraxchirurgie</option>
+                            <option value="Transfusionsmedizin">Transfusionsmedizin</option>
+                            <option value="Tropenmedizin">Tropenmedizin</option>
+                            <option value="Urologie">Urologie</option>
+                            <option value="Virologie und Infektionsepidemiologie">Virologie und Infektionsepidemiologie</option>
+                            <option value="Viszeralchirurgie">Viszeralchirurgie</option>
+                            <option value="Zentrale Notaufnahme">Zentrale Notaufnahme</option>
+                            <option value="Endoskopie">Endoskopie</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+
+                    <div class="field">
+                      <label class="label">Wunsch Job Fachbereich</label>
+                      <div class="control">
+                        <div class="select">
+                          <select name="kategorie" id="fachbereiche-select">
+                            <option value="" disabled selected>Bitte wählen</option>
+                            <option value="Allergologie">Allergologie</option>
+                            <option value="Allgemeinmedizin">Allgemeinmedizin</option>
+                            <option value="Angiologie">Angiologie</option>
+                            <option value="Anästhesie">Anästhesie</option>
+                            <option value="Arbeitsmedizin">Arbeitsmedizin</option>
+                            <option value="Augenheilkunde">Augenheilkunde</option>
+                            <option value="Chirurgie">Chirurgie</option>
+                            <option value="Dermatologie und Venerologie">Dermatologie und Venerologie</option>
+                            <option value="Diagnostische Radiologie">Diagnostische Radiologie</option>
+                            <option value="Endokrinologie und Diabetologie">Endokrinologie und Diabetologie</option>
+                            <option value="Forensische Pathologie">Forensische Pathologie</option>
+                            <option value="Forensische Psychiatrie">Forensische Psychiatrie</option>
+                            <option value="Frauenheilkunde und Geburtshilfe (Gynäkologie)">Frauenheilkunde und Geburtshilfe (Gynäkologie)</option>
+                            <option value="Gastroenterologie">Gastroenterologie</option>
+                            <option value="Gefäßchirurgie">Gefäßchirurgie</option>
+                            <option value="Geriatrie">Geriatrie</option>
+                            <option value="Hals-Nasen-Ohren-Heilkunde">Hals-Nasen-Ohren-Heilkunde</option>
+                            <option value="Herzchirurgie">Herzchirurgie</option>
+                            <option value="Homöopathie">Homöopathie</option>
+                            <option value="Humangenetik">Humangenetik</option>
+                            <option value="Hämatologie und internistische Onkologie">Hämatologie und internistische Onkologie</option>
+                            <option value="Immunologie">Immunologie</option>
+                            <option value="Infektiologie">Infektiologie</option>
+                            <option value="Innere Medizin">Innere Medizin</option>
+                            <option value="Intensivmedizin">Intensivmedizin</option>
+                            <option value="Interventionelle Radiologie">Interventionelle Radiologie</option>
+                            <option value="Kardiologie">Kardiologie</option>
+                            <option value="Kinder- und Jugendmedizin">Kinder- und Jugendmedizin</option>
+                            <option value="Kinder- und Jugendpsychiatrie und -psychotherapie">Kinder- und Jugendpsychiatrie und -psychotherapie</option>
+                            <option value="Kinderchirurgie">Kinderchirurgie</option>
+                            <option value="Kinderkardiologie">Kinderkardiologie</option>
+                            <option value="Labormedizin">Labormedizin</option>
+                            <option value="Mikrobiologie">Mikrobiologie</option>
+                            <option value="Neonatologie">Neonatologie</option>
+                            <option value="Nephrologie">Nephrologie</option>
+                            <option value="Neurochirurgie">Neurochirurgie</option>
+                            <option value="Neurologie">Neurologie</option>
+                            <option value="Notfallmedizin">Notfallmedizin</option>
+                            <option value="Nuklearmedizin">Nuklearmedizin</option>
+                            <option value="Orthopädie und Unfallchirurgie">Orthopädie und Unfallchirurgie</option>
+                            <option value="Palliativmedizin">Palliativmedizin</option>
+                            <option value="Pathologie">Pathologie</option>
+                            <option value="Pharmakologie und Toxikologie">Pharmakologie und Toxikologie</option>
+                            <option value="Physikalische und Rehabilitative Medizin">Physikalische und Rehabilitative Medizin</option>
+                            <option value="Plastische, Rekonstruktive und Ästhetische Chirurgie">Plastische, Rekonstruktive und Ästhetische Chirurgie</option>
+                            <option value="Pneumologie">Pneumologie</option>
+                            <option value="Psychiatrie und Psychotherapie">Psychiatrie und Psychotherapie</option>
+                            <option value="Psychosomatische Medizin und Psychotherapie">Psychosomatische Medizin und Psychotherapie</option>
+                            <option value="Radiologie">Radiologie</option>
+                            <option value="Rechtsmedizin">Rechtsmedizin</option>
+                            <option value="Reproduktionsmedizin">Reproduktionsmedizin</option>
+                            <option value="Rheumatologie">Rheumatologie</option>
+                            <option value="Schmerztherapie">Schmerztherapie</option>
+                            <option value="Sexualmedizin">Sexualmedizin</option>
+                            <option value="Sportmedizin">Sportmedizin</option>
+                            <option value="Strahlentherapie">Strahlentherapie</option>
+                            <option value="Thoraxchirurgie">Thoraxchirurgie</option>
+                            <option value="Transfusionsmedizin">Transfusionsmedizin</option>
+                            <option value="Tropenmedizin">Tropenmedizin</option>
+                            <option value="Urologie">Urologie</option>
+                            <option value="Virologie und Infektionsepidemiologie">Virologie und Infektionsepidemiologie</option>
+                            <option value="Viszeralchirurgie">Viszeralchirurgie</option>
+                            <option value="Zentrale Notaufnahme">Zentrale Notaufnahme</option>
+                            <option value="Endoskopie">Endoskopie</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
                         <!-- Add a new field for Zusatzbezeichnungen -->
                     <div class="field">
                         <label class="label">Zusatzbezeichnungen (Mehrfachauswahl möglich)</label>
@@ -409,14 +494,12 @@
                     <h2 class="subtitle">
                         <i class="fas fa-graduation-cap mr-2"></i>Fachliche Qualifikationen
                     </h2>
-                    <div class="field">
-                        <label class="label">Berufliche Schwerpunkte im Interview</label>
-                        <div class="control">
-                            <textarea class="textarea" name="interview_schwerpunkte"></textarea>
-                        </div>
-                    </div>
-
-<h2 class="title is-4">Wünsche an den neuen Job</h2>
+                    <!-- <div class="field"> -->
+                    <!--     <label class="label">Berufliche Schwerpunkte im Interview</label> -->
+                    <!--     <div class="control"> -->
+                    <!--         <textarea class="textarea" name="interview_schwerpunkte"></textarea> -->
+                    <!--     </div> -->
+                    <!-- </div> -->
 <div class="field">
   <label class="label">Wünsche an den neuen Job</label>
   <div   class="control">
@@ -432,7 +515,7 @@
 </div>
 
                 <!-- Bisheriger Arbeitgeber -->
-                <div class="form-section">
+                <div class="mt-5">
                     <h2 class="subtitle">
                         <i class="fas fa-building mr-2"></i>Bisheriger Arbeitgeber
                     </h2>
@@ -468,6 +551,15 @@
                     <!--         <input class="input" type="text" name="arbeitgeber_lage"> -->
                     <!--     </div> -->
                     <!-- </div> -->
+
+                      <div class="column">
+                          <div class="field">
+                              <label class="label">Wohnort (Stadt)</label>
+                              <div class="control">
+                                  <input class="input" type="text" name="wohnort" id="wohnort">
+                              </div>
+                          </div>
+                      </div>
                 </div>
                 
                 <!-- Kandidatenstatus -->
@@ -526,14 +618,6 @@
                 <!--             </div> -->
                 <!--         </div> -->
 
-                      <div class="column">
-                          <div class="field">
-                              <label class="label">Wohnort (Stadt)</label>
-                              <div class="control">
-                                  <input class="input" type="text" name="wohnort" id="wohnort">
-                              </div>
-                          </div>
-                      </div>
                 <!--     </div> -->
                 <!--      -->
                 <!--     <!-- Radius-Auswahl für Nearby Search --> 
@@ -564,49 +648,49 @@
                     
                     <!-- Erreichbare Städte - NEUER BEREICH MIT STÄDTE-EDITOR -->
 
-          <div class="form-section">
-                <h3 class="subtitle">
-                    <i class="fas fa-city"></i>Erreichbare Städte
-                </h3>
-                
-                <div class="field">
-                    <label class="label">Städte bearbeiten</label>
-                    
-                    <!-- Container für die Liste der Städte mit Tags -->
-                    <div id="stadtTags" class="tags-container tags are-medium">
-                        <!-- Tags will be added here dynamically -->
-                    </div>
-                    
-                    <!-- Eingabefeld und Button zum Hinzufügen -->
-                    <div class="field has-addons">
-                        <div class="control is-expanded">
-                            <input id="stadtInput" class="input" type="text" placeholder="Neue Stadt hinzufügen...">
-                        </div>
-                        <div class="control">
-                            <button id="stadtHinzufugen" type="button" class="button is-info">
-                                <span class="icon">
-                                    <i class="fas fa-plus"></i>
-                                </span>
-                                <span>Hinzufügen</span>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Verstecktes Textarea für die Speicherung der Städteliste -->
-                    <textarea class="textarea is-hidden" id="erreichbare_stadtname" name="erreichbare_stadtname">München, Frankfurt, Berlin</textarea>              
-                        <!-- Info-Meldung -->
-                        <p class="help">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            Die Städteliste wird automatisch basierend auf dem Wohnort und Radius generiert. 
-                            Du kannst hier Städte manuell hinzufügen oder entfernen.
-                        </p>
-                    </div>
-                    
-                    <!-- Weitere Standort-bezogene Felder -->
-                </div>
+          <div class="">
+                <!-- <h3 class="subtitle"> -->
+                <!--     <i class="fas fa-city"></i>Erreichbare Städte -->
+                <!-- </h3> -->
+                <!--  -->
+                <!-- <div class="field"> -->
+                <!--     <label class="label">Städte bearbeiten</label> -->
+                <!--      -->
+                <!--     <!-- Container für die Liste der Städte mit Tags -->
+                <!--     <div id="stadtTags" class="tags-container tags are-medium"> -->
+                <!--         <!-- Tags will be added here dynamically -->
+                <!--     </div> -->
+                <!--      -->
+                <!--     <!-- Eingabefeld und Button zum Hinzufügen --> 
+                <!--     <div class="field has-addons"> -->
+                <!--         <div class="control is-expanded"> -->
+                <!--             <input id="stadtInput" class="input" type="text" placeholder="Neue Stadt hinzufügen..."> -->
+                <!--         </div> -->
+                <!--         <div class="control"> -->
+                <!--             <button id="stadtHinzufugen" type="button" class="button is-info"> -->
+                <!--                 <span class="icon"> -->
+                <!--                     <i class="fas fa-plus"></i> -->
+                <!--                 </span> -->
+                <!--                 <span>Hinzufügen</span> -->
+                <!--             </button> -->
+                <!--         </div> -->
+                <!--     </div> -->
+                <!--      -->
+                <!--     <!-- Verstecktes Textarea für die Speicherung der Städteliste --> 
+                <!--     <textarea class="textarea is-hidden" id="erreichbare_stadtname" name="erreichbare_stadtname">München, Frankfurt, Berlin</textarea>               -->
+                <!--         <!-- Info-Meldung --> 
+                <!--         <p class="help"> -->
+                <!--             <i class="fas fa-info-circle mr-1"></i> -->
+                <!--             Die Städteliste wird automatisch basierend auf dem Wohnort und Radius generiert.  -->
+                <!--             Du kannst hier Städte manuell hinzufügen oder entfernen. -->
+                <!--         </p> -->
+                <!--     </div> -->
+                <!--      -->
+                <!--     <!-- Weitere Standort-bezogene Felder --> 
+                <!-- </div> -->
                 
                 <!-- Arbeitspräferenzen -->
-                <div class="form-section">
+                <div class="">
                     <h2 class="subtitle">
                         <i class="fas fa-sliders-h mr-2"></i>Arbeitspräferenzen
                     </h2>
@@ -737,6 +821,13 @@
   </div>
 </div>
 
+<div class="field">
+  <label class="label">Relevante Berufserfahrung</label>
+  <div class="control">
+    <textarea class="textarea" name="relevante_berufserfahrung"></textarea>
+  </div>
+</div>
+
 <!-- Sonstiges -->
 <div class="field">
   <label class="label">Sonstiges</label>
@@ -794,7 +885,7 @@
                 </div>
                 
                 <!-- Gehaltsinformationen -->
-                <div class="form-section">
+                <div class="">
                     <h2 class="subtitle">
                         <i class="fas fa-euro-sign mr-2"></i>Gehaltsinformationen
                     </h2>
@@ -884,7 +975,7 @@
                 <!-- </div> -->
                 
                 <!-- Vertragliche Details -->
-                <div class="form-section">
+                <div class="">
                     <h2 class="subtitle">
                         <i class="fas fa-file-contract mr-2"></i>Vertragliche Details
                     </h2>
@@ -1013,14 +1104,14 @@
 <script>
 /* Tom-Select erst hier erstellen – und die Instanz-Variablen exportieren,
    damit recruitcrm-api.js sie später findet                            */
-window.tsFach = new TomSelect('#fachbereiche-select', {
-  plugins: ['remove_button'],
-  maxItems: null,
-  create: false,
-  persist: false,
-  hideSelected: true,
-  placeholder: "Fachbereiche auswählen…"
-});
+// window.tsFach = new TomSelect('#fachbereiche-select', {
+//   plugins: ['remove_button'],
+//   maxItems:1,
+//   create: false,
+//   persist: false,
+//   hideSelected: true,
+//   placeholder: "Fachbereiche auswählen…"
+// });
 
 window.tsZusatz = new TomSelect('#zusatzbezeichnungen-select', {
   plugins: ['remove_button'],
@@ -1173,135 +1264,41 @@ window.tsZusatz = new TomSelect('#zusatzbezeichnungen-select', {
     // });
     </script>
 
-  <script>
-// document.addEventListener("DOMContentLoaded", () => {
-//
-//   /* ------- Laden per ID -------- */
-//   const idInput = document.getElementById("kandidat_id");
-//   const loadBtn = document.getElementById("loadFromCRM");
-//
-//   loadBtn.addEventListener("click", async () => {
-//     const kid = idInput.value.trim();
-//     if (!kid) { alert("Bitte eine Kandidaten-ID eingeben!"); return; }
-//
-//     const r = await fetch(`/api/kandidat/${kid}`);
-//     if (!r.ok) return alert("Fehler beim Laden");
-//
-//
-//     fillForm(await r.json());
-//   });
-
-  /* ------- Speichern ---------- */
-  // const form = document.getElementById("kandidatenForm");
-  // form.removeAttribute("action");          // Browser-Submit verhindern
-  // form.addEventListener("submit", e => {
-  //   e.preventDefault();
-  //
-  //   const fd = new FormData(form);
-  //   fetch("/api/submit", { method:"POST", body:fd })
-  //     .then(r => r.json())
-  //     .then(res => alert(res.message || res.status))
-  //     .catch(console.error);
-  // });
-
-  /* ------- Hilfen ------------- */
-  // function fillForm(d){ document.getElementById("vorname").value = d.vorname || ""; }
-// });
-</script>
-<script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const stadtInput = document.getElementById("stadtInput");
-            const addBtn = document.getElementById("stadtHinzufugen");
-            const tagsContainer = document.getElementById("stadtTags");
-            const hiddenTextarea = document.getElementById("erreichbare_stadtname");
-            const hiddenPreview = document.getElementById("hiddenValuePreview");
-            
-            // Initial cities from hidden textarea
-            let cities = hiddenTextarea.value 
-                ? hiddenTextarea.value.split(',').map(city => city.trim()).filter(city => city)
-                : [];
-            
-            // Update hidden preview
-            function updateHiddenPreview() {
-                hiddenPreview.textContent = hiddenTextarea.value;
-            }
-            
-            // Render tags function - FIXED VERSION
-            function renderTags() {
-                // Clear only the tags, not the entire container
-                const existingTags = tagsContainer.querySelectorAll('.tag');
-                existingTags.forEach(tag => tag.remove());
-                
-                cities.forEach((city, index) => {
-                    const tag = document.createElement("span");
-                    tag.className = "tag is-info is-medium mr-2 mb-2";
-                    tag.innerHTML = `
-                        ${city}
-                        <button class="delete is-small ml-2" data-index="${index}"></button>
-                    `;
-                    tagsContainer.appendChild(tag);
-                });
-                
-                // Update hidden textarea value
-                hiddenTextarea.value = cities.join(', ');
-                updateHiddenPreview();
-            }
-            
-            // Add new city
-            function addCity(city) {
-                const trimmedCity = city.trim();
-                if (trimmedCity && !cities.includes(trimmedCity)) {
-                    cities.push(trimmedCity);
-                    renderTags();
-                    stadtInput.value = '';
-                }
-            }
-            
-            function removeCity(index) {
-                cities.splice(index, 1);
-                renderTags();
-            }
-            
-            // Initial render
-            renderTags();
-            
-            // Event listeners
-            addBtn.addEventListener("click", () => {
-                if (stadtInput.value) {
-                    addCity(stadtInput.value);
-                }
-            });
-            
-            stadtInput.addEventListener("keypress", (e) => {
-                if (e.key === "Enter" && stadtInput.value) {
-                    e.preventDefault();
-                    addCity(stadtInput.value);
-                }
-            });
-            
-            // FIXED EVENT LISTENER USING EVENT DELEGATION
-            tagsContainer.addEventListener("click", (e) => {
-                if (e.target.classList.contains("delete")) {
-                    const index = parseInt(e.target.getAttribute("data-index"));
-                    removeCity(index);
-                }
-                // Also handle if the click is on the SVG inside the button
-                else if (e.target.closest(".delete")) {
-                    const deleteButton = e.target.closest(".delete");
-                    const index = parseInt(deleteButton.getAttribute("data-index"));
-                    removeCity(index);
-                }
-            });
-            
-            // Save button
-            document.getElementById("saveButton").addEventListener("click", () => {
-                alert(`Daten gespeichert!\n\nErreichbare Städte: ${cities.join(', ')}\n\nVersteckter Wert: "${hiddenTextarea.value}"`);
-            });
-            
-            // Initialize hidden value preview
-            updateHiddenPreview();
-        });
-</script>
+<!--   <script> -->
+<!-- document.addEventListener("DOMContentLoaded", () => { -->
+<!---->
+<!--   /* ------- Laden per ID -------- */ -->
+<!--   const idInput = document.getElementById("kandidat_id"); -->
+<!--   const loadBtn = document.getElementById("loadFromCRM"); -->
+<!---->
+<!--   loadBtn.addEventListener("click", async () => { -->
+<!--     const kid = idInput.value.trim(); -->
+<!--     if (!kid) { alert("Bitte eine Kandidaten-ID eingeben!"); return; } -->
+<!---->
+<!--     const r = await fetch(`/api/kandidat/${kid}`); -->
+<!--     if (!r.ok) return alert("Fehler beim Laden"); -->
+<!---->
+<!---->
+<!--     fillForm(await r.json()); -->
+<!--   }); -->
+<!---->
+<!--   /* ------- Speichern ---------- */ -->
+<!--   const form = document.getElementById("kandidatenForm"); -->
+<!--   form.removeAttribute("action");          // Browser-Submit verhindern -->
+<!--   form.addEventListener("submit", e => { -->
+<!--     e.preventDefault(); -->
+<!---->
+<!--     const fd = new FormData(form); -->
+<!--     fetch("/api/submit", { method:"POST", body:fd }) -->
+<!--       .then(r => r.json()) -->
+<!--       .then(res => alert(res.message || res.status)) -->
+<!--       .catch(console.error); -->
+<!--   }); -->
+<!---->
+<!--   /* ------- Hilfen ------------- */ -->
+<!--   // function fillForm(d){ document.getElementById("vorname").value = d.vorname || ""; } -->
+<!-- // }); -->
+<!-- </script> -->
 
 <script>
   function setupLinkPreview(inputId, buttonId) {

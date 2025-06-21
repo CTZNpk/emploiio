@@ -1,66 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("kandidatenForm");
 
-  // City Tag Management ======================================
-  const input = document.getElementById("stadtInput");
-  const addBtn = document.getElementById("stadtHinzufugen");
-  const tagsContainer = document.getElementById("stadtTags");
-  const hiddenTextarea = document.getElementById("erreichbare_stadtname");
-
-  let cities = [];
-
-  function renderTags() {
-    tagsContainer.innerHTML = "";
-    cities.forEach((city, index) => {
-      const tag = document.createElement("span");
-      tag.className = "tag is-info is-medium";
-      tag.innerHTML = `
-        ${city}
-        <button class="delete is-small ml-2" data-index="${index}"></button>
-      `;
-      tagsContainer.appendChild(tag);
-    });
-
-    hiddenTextarea.value = cities.join(", ");
-  }
-
-  function addCity(val) {
-    const city = val.trim();
-    if (city && !cities.includes(city)) {
-      cities.push(city);
-      renderTags();
-    }
-  }
-
-  function removeCity(index) {
-    cities.splice(index, 1);
-    renderTags();
-  }
-
-  // Initialize event listeners
-  addBtn.addEventListener("click", () => {
-    if (input.value) {
-      addCity(input.value);
-      input.value = "";
-    }
-  });
-
-  input.addEventListener("keypress", (e) => {
-    if (e.key === "Enter" && input.value) {
-      e.preventDefault();
-      addCity(input.value);
-      input.value = "";
-    }
-  });
-
-  tagsContainer.addEventListener("click", (e) => {
-    if (e.target.classList.contains("delete")) {
-      const index = parseInt(e.target.getAttribute("data-index"));
-      removeCity(index);
-    }
-  });
-  // End of City Tag Management ===============================
-
   // Prevent classic form submission
   form.addEventListener("submit", function(e) {
     e.preventDefault();
@@ -162,6 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setVal("wuensche_an_den_job", data.wuensche_an_den_job);
     setVal("berufliche_erfahrung", data.berufliche_erfahrung);
+    setVal("berufserfahrung_in_jahren", data.berufserfahrung_in_jahren);
 
     setVal("umzugsbereit[]", data.umzugsbereit);
     setVal("relevante_berufserfahrung", data.relevante_berufserfahrung);
@@ -195,22 +136,24 @@ document.addEventListener("DOMContentLoaded", () => {
     setVal("zusatzqualifikation", data.zusatzqualifikation);
     setVal("kuendigungsfrist", data.kuendigungsfrist);
     setVal("branche", data.branche);
-    setVal("aktuelle_position", data.aktuelle_position);
     setVal("geschlecht", data.geschlecht?.toString());
     setVal(
       "cv_submission_deadline",
       data.cv_submission_deadline?.split("T")[0],
     );
 
+
+
     // Update city tags ========================================
-    if (data.erreichbare_stadtname) {
-      cities = data.erreichbare_stadtname
-        .split(",")
-        .map((city) => city.trim())
-        .filter((city) => city);
-      renderTags();
-    }
+    // if (data.erreichbare_stadtname) {
+    //   cities = data.erreichbare_stadtname
+    //     .split(",")
+    //     .map((city) => city.trim())
+    //     .filter((city) => city);
+    //   renderTags();
+    // }
     // End of city tags update =================================
+
 
     // Set radio buttons
     setRadio("aktiv_suche", data.aktiv_suche);
@@ -225,15 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setRadio("gehalt_erhoehen", data.gehalt_erhoehen);
 
     // Set TomSelect instances
-    const tsFach = getTS("fachbereiche-select");
     const tsZusatz = getTS("zusatzbezeichnungen-select");
-
-    if (tsFach) {
-      tsFach.clear();
-      if (data["kategorie[]"]) {
-        tsFach.addItems(data["kategorie[]"].split(",").map((s) => s.trim()));
-      }
-    }
 
     if (tsZusatz) {
       tsZusatz.clear();
@@ -244,18 +179,41 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+
     // Trigger branche change for position filtering
     const brancheSel = document.getElementById("branche-select");
     if (brancheSel) {
       brancheSel.value = data.branche || "";
       brancheSel.dispatchEvent(new Event("change"));
     }
+    function setupLinkPreview(inputId, buttonId) {
+      const input = document.getElementById(inputId);
+      const button = document.getElementById(buttonId);
+
+      function updateButton() {
+        const url = input.value.trim();
+        if (url && url.startsWith("http")) {
+          button.href = url;
+          button.style.display = "inline-block";
+        } else {
+          button.style.display = "none";
+        }
+      }
+
+      updateButton();
+    }
+
+    setupLinkPreview("linkedin_link", "open-linkedin");
+    setupLinkPreview("xing_link", "open-xing");
+    setupLinkPreview("cv_link", "open-cv");
 
     // Set position after delay (allow filtering to complete)
     setTimeout(() => {
       const positionSel = document.getElementById("position-select");
       if (positionSel) {
         positionSel.value = data.aktuelle_position || "";
+        setVal("kategorie", data.kategorie);
+        setVal("aktuelle_position", data.aktuelle_position);
       }
     }, 100);
   }

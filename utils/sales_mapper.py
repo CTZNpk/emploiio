@@ -1,5 +1,7 @@
 
 def generate_transparent_sales_pdf(form_data):
+    print("ACTUAL POSITION")
+    print(form_data.get("aktuelle_position"))
 
     return {
         "kandidat": {
@@ -22,7 +24,7 @@ def generate_transparent_sales_pdf(form_data):
             "wunschgehalt": form_data.get("expected_salary_display"),
             "umzugsbereitschaft": form_data.get("umzugsbereit[]"),
             "wechselkommitment": form_data.get("wechselkommitment", "Nein"),
-            "berufserfahrung": form_data.get("relevante_berufserfahrung", "0"),
+            "berufserfahrung": form_data.get("berufserfahrung_in_jahren", "0"),
             "erfolgsmethodik": form_data.get("erfolgsmethodik_kpis"),
             "umgang_rueckschlaege": form_data.get("umgang_mit_rueckschlaegen"),
             "weiterentwicklung": form_data.get("weiterentwicklung"),
@@ -54,6 +56,6 @@ def generate_airtable_payload_sales(form):
         "fachbereich_aktuell": form.get("branche"),
         "arbeitsort": form.get("arbeitgeber_standort") or form.get("wohnort"),
         "wuensche_an_den_neuen_job": form.get("wuensche_an_den_job"),
-        "berufliche_erfahrung": form.get("relevante_berufserfahrung"),
+        "berufliche_erfahrung": form.get("berufserfahrung_in_jahren"),
         "sonstiges": form.get("sonstiges"),
     }

@@ -35,7 +35,7 @@ def build_custom_field_payload(form) -> list[dict]:
         "Ab wann wäre der Kandidat verfügbar?": form.get("verfuegbar_ab"),
         "Arbeitsort (Standort)": form.get("arbeitgeber_standort"),
         "Zusatzleistungen (aktuell)": form.get("additional_benefits"),
-        "Extras (Interview-Notes)": form.get("job_extras"),
+        # "Extras (Interview-Notes)": form.get("job_extras"),
         "Interview-Notes Schwerpunkte": form.get("interview_schwerpunkte"),
         "Gewünschter Unternehmenstyp": form.get("unternehmen_wahl"),
         "Ist der Kandidat aktiv auf der Suche?": form.get("aktiv_suche"),
@@ -44,7 +44,8 @@ def build_custom_field_payload(form) -> list[dict]:
         "CV wird zugeschickt bis zum": form.get("cv_submission_deadline"),
         "Art des Arbeitgebers": form.get("arbeitgeber_art"),
         "Aktueller Arbeitgeber": form.get("arbeitgeber_name"),
-        "Wunsch Job Fachbereich": join_multi("kategorie[]"),
+        "Wunsch Job Fachbereich": join_multi("kategorie"),
+        "Aktuelle Kategorie (Fachbereich)": join_multi("aktuelle_fachbereich"),
         "Welches Verkehrsmittel wird genutzt?": form.get("verkehrsmittel"),
         "Home-Office (aktuell)": form.get("home_office_aktuell"),
         "Home-Office (gewünscht)": form.get("home_office_gewuenscht"),
@@ -73,6 +74,7 @@ def build_custom_field_payload(form) -> list[dict]:
         "Wunschklinik": form.get("wunschklinik"),
         # "Auswertung": form.get("auswertung"),
         # "Auswertung": "HELLO",
+        "Extras (Interview-Notes)": form.get("auswertung"),
         "Anonyme Auswertung": form.get("anonym_auswertung"),
     }
 

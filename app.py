@@ -58,6 +58,7 @@ AIRTABLE_API_KEY = os.getenv("AIRTABLE_API_KEY")
 BASE_ID = "appE2c4HLRRkHAr3y"
 SALES_TABLE_ID = "tbl3FmKzmSWmxJhS0"
 MED_TABLE_ID = "tbltjg6SO2Px8PzMy"
+skills = ""
 
 app = Flask(__name__)
 
@@ -216,17 +217,20 @@ def update_or_create_medical_record(form_data):
             return None
 
 
-def update_skills_in_airtable(email, skills):
+def update_skills_in_airtable(email, skills, branch):
     """
     Update skills field for a candidate record in Airtable.
 
     Args:
         email: Candidate's email address
         skills: Skills data to update
+        branch: String indicating whether the candidate is in the Med or Sales branch
     """
     if not email or not skills:
         print("❌ Missing email or skills data")
         return
+
+    table_id = MED_TABLE_ID if "Med" in branch else SALES_TABLE_ID
 
     headers = {
         "Authorization": f"Bearer {AIRTABLE_API_KEY}",
@@ -234,7 +238,7 @@ def update_skills_in_airtable(email, skills):
     }
 
     # Find record by email
-    search_url = f"https://api.airtable.com/v0/{BASE_ID}/{MED_TABLE_ID}"
+    search_url = f"https://api.airtable.com/v0/{BASE_ID}/{table_id}"
     search_params = {
         "filterByFormula": f"LOWER({{email}}) = '{email.lower()}'"
     }
@@ -418,6 +422,7 @@ def api_get_candidate(candidate_id: int):
     Returns:
         JSON response with candidate data or error message
     """
+
     # Try direct API call first
     direct_response = requests.get(
         f"{RECRUITCRM_BASE_URL}/candidates/{candidate_id}",
@@ -437,13 +442,20 @@ def api_get_candidate(candidate_id: int):
             message=f"Candidate {candidate_id} not found"
         ), 404
 
-    # Extract and update skills in Airtable
+    def get_custom_field_value(custom_fields, field_name):
+        for field in custom_fields:
+            if field.get("field_name") == field_name:
+                return field.get("value")
+        return None
+
     skills = candidate_data.get("skill", "")
     email = candidate_data.get("email")
+    branch = get_custom_field_value(
+        candidate_data.get("custom_fields", []), "Branche")
 
     if email and skills:
-        update_skills_in_airtable(email, skills)
-        print(f"Updated skills for {email}: {skills}")
+        update_skills_in_airtable(email, skills, branch)
+        print(f"Updated skills for {email}: {skills} : {branch}")
 
     return jsonify(recruit_to_form(candidate_data))
 
@@ -500,6 +512,8 @@ def submit_candidate_form():
         # Add PDF URLs to form data
         form_data["auswertung"] = transparent_url
         form_data["anonym_auswertung"] = anonymous_url
+        print(anonymous_url)
+        print(transparent_url)
 
         # Prepare RecruitCRM payload
         custom_fields = build_custom_field_payload(form_data)
@@ -517,7 +531,6 @@ def submit_candidate_form():
         except (ValueError, TypeError):
             gender_id = 3  # Default gender ID
 
-        # Build complete payload for RecruitCRM
         recruitcrm_payload = {
             "first_name": form_data.get("vorname"),
             "last_name": form_data.get("nachname"),
@@ -537,11 +550,12 @@ def submit_candidate_form():
             "available_from": form_data.get("verfuegbar_ab"),
             "locality": form_data.get("erreichbare_stadtname"),
             "notice_period": form_data.get("kuendigungsfrist"),
+            "work_ex_year": form_data.get("berufserfahrung_in_jahren", 0),
             "custom_fields": custom_fields
         }
 
-        print("RecruitCRM Payload:")
-        print(json.dumps(recruitcrm_payload, indent=2))
+        # print("RecruitCRM Payload:")
+        # print(json.dumps(recruitcrm_payload, indent=2))
 
         # Submit to RecruitCRM
         recruitcrm_url = f"{RECRUITCRM_BASE_URL}/candidates/{candidate_id}"
@@ -552,8 +566,8 @@ def submit_candidate_form():
             timeout=20
         )
 
-        print("RecruitCRM Response:")
-        print(recruitcrm_response.json())
+        # print("RecruitCRM Response:")
+        # print(recruitcrm_response.json())
 
         if recruitcrm_response.status_code != 200:
             return jsonify(

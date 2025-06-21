@@ -1,6 +1,9 @@
 document.addEventListener("DOMContentLoaded", function() {
   const brancheSelect = document.getElementById("branche-select");
   const positionSelect = document.getElementById("position-select");
+  const aktuelle_fachebereiche = document.getElementById(
+    "aktuelle-fachbereiche-select",
+  );
   const positionFeld = positionSelect.closest(".field");
 
   const fachbereichFeld = document
@@ -35,6 +38,8 @@ document.addEventListener("DOMContentLoaded", function() {
     if (wuenscheFeld) wuenscheFeld.style.display = isMed ? "block" : "none";
 
     if (erfahrungFeld) erfahrungFeld.style.display = isMed ? "block" : "none";
+    if (aktuelle_fachebereiche)
+      aktuelle_fachebereiche.style.display = isMed ? "block" : "none";
 
     // Positionen setzen
     positionSelect.innerHTML = '<option value="">Bitte wählen</option>';

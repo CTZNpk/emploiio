@@ -46,7 +46,8 @@ def recruit_to_form(raw: dict) -> dict:
         "weitere_personalvermittlungen": cf.get("Arbeitet der Kandidat mit weiteren Personalvermittlungen zusammen?"),
         "cv_submission_deadline": cf.get("CV wird zugeschickt bis zum"),
         "arbeitgeber_art": cf.get("Art des Arbeitgebers"),
-        "kategorie[]": cf.get("Wunsch Job Fachbereich"),
+        "kategorie": cf.get("Wunsch Job Fachbereich"),
+        "aktuelle_fachbereich": cf.get("Aktuelle Kategorie (Fachbereich)"),
         "verkehrsmittel": cf.get("Welches Verkehrsmittel wird genutzt?"),
         "home_office_aktuell": cf.get("Home-Office (aktuell)"),
         "home_office_gewuenscht": cf.get("Home-Office (gewünscht)"),
@@ -61,9 +62,10 @@ def recruit_to_form(raw: dict) -> dict:
         "expected_salary": raw.get("salary_expectation"),
         "wuensche_an_den_job": cf.get("Wuensche am neuen Job"),
         "berufliche_erfahrung": cf.get("Aktuelle Berufliche Lage des Kandidaten"),
+        "berufserfahrung_in_jahren": raw.get("work_ex_year", 0),
 
         # ----- Newly Added Custom Fields ----- #
-        "umzugsbereit[]": cf.get("Umzugsbereit"),            # multiselect
+        "umzugsbereit": cf.get("Umzugsbereit"),            # multiselect
         "relevante_berufserfahrung": cf.get("Relevante Berufserfahrung"),
         "berufliche_ziele": cf.get("Berufliche Ziele"),
         "private_ziele": cf.get("Private Ziele"),
