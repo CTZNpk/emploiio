@@ -1,115 +1,106 @@
+"""
+Emploio Interview Sheet - Flask Backend Application
 
-# --------------------------------------------------------------------------- #
-#  emploio – Interview-Sheet – Flask-Backend                                  #
-# --------------------------------------------------------------------------- #
-from pprint import pprint
+This Flask application manages candidate interview data by integrating with:
+- RecruitCRM API for candidate management
+- Airtable for data storage and organization
+- PDFMonkey for generating interview sheets and reports
+
+The app processes candidate forms, generates PDFs, and syncs data across platforms.
+"""
+
 import os
 import itertools
 import datetime as dt
+import json
+import time
+from pprint import pprint
+
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
 import requests
-import cachetools
-import json
-import time
+
+from utils.recruit_mapper import recruit_to_form
+from utils.custom_field_mapper import build_custom_field_payload, paginated_fetch, build_custom_fields_map
+from utils.sales_mapper import generate_airtable_payload_sales, generate_transparent_sales_pdf
+from utils.med_mapper import generate_airtable_payload_med, generate_med_transparent_pdf
 
 
-# -----------------------------  Konfiguration  ----------------------------- #
+# ============================================================================
+# Configuration and Setup
+# ============================================================================
+
 load_dotenv()
+
+# RecruitCRM API Configuration
 RECRUITCRM_API_KEY = os.getenv("RECRUITCRM_API_KEY")
 RECRUITCRM_BASE_URL = "https://api.recruitcrm.io/v1"
 HEADERS = {
     "Authorization": f"Bearer {RECRUITCRM_API_KEY}",
-    "Content-Type":  "application/json"
+    "Content-Type": "application/json"
 }
+
+# PDFMonkey API Configuration
 PDFMONKEY_API_KEY = os.getenv("MONKEYPDF_API_KEY")
+PDFMONKEY_HEADERS = {
+    "Authorization": f"Bearer {PDFMONKEY_API_KEY}",
+    "Accept": "application/json"
+}
+
+# PDF Template IDs for different document types
 SALES_TRANSPARENT_TEMPLATE_ID = "27D99758-E3D4-4661-998C-6DB52835467D"
 SALES_ANONYMOUS_TEMPLATE_ID = "E781DCB1-E3D2-41C8-AD05-F176481447AA"
 MED_TRANSPARENT_TEMPLATE_ID = "EB0C33E8-3458-4A19-BCE4-C609DDAA71F3"
 MED_ANONYMOUS_TEMPLATE_ID = "4AD5DBFA-4803-49FF-B7ED-44720FEEB14F"
+
+# Airtable API Configuration
 AIRTABLE_API_KEY = os.getenv("AIRTABLE_API_KEY")
 BASE_ID = "appE2c4HLRRkHAr3y"
 SALES_TABLE_ID = "tbl3FmKzmSWmxJhS0"
 MED_TABLE_ID = "tbltjg6SO2Px8PzMy"
 
-
 app = Flask(__name__)
 
-# -------------------------  Paginierte Listen-Helfer  ---------------------- #
+
+# ============================================================================
+# Utility Functions
+# ============================================================================
 
 
-def paginated(url: str, page_size: int = 100):
-    page = 1
-    while True:
-        r = requests.get(url,
-                         # params={"page": page, "per_page": page_size},
-                         headers=HEADERS, timeout=20)
-        if r.status_code != 200:
-            break
-        chunk = r.json().get("data", [])
-        if not chunk:
-            break
-        yield from chunk
-        page += 1
+def fetch_candidate_from_list(candidate_id: int) -> dict | None:
+    """
+    Fallback method to find candidate by ID when direct API call fails.
 
-# ----------------------------  Custom-Field-Cache  ------------------------- #
+    Args:
+        candidate_id: The candidate's ID
 
-
-@cachetools.cached(cachetools.TTLCache(maxsize=1, ttl=30*60))
-def build_cf_map() -> dict[int, str]:
-    """field_id → field_name für alle Kandidaten-Custom-Fields (‹ 10 Seiten ›)."""
+    Returns:
+        Candidate data dictionary or None if not found
+    """
     url = f"{RECRUITCRM_BASE_URL}/candidates"
-    cf_map: dict[int, str] = {}
-    for cand in itertools.islice(paginated(url), 1_000):
-        for cf in cand.get("custom_fields", []):
-            cf_map.setdefault(cf["field_id"], cf["field_name"])
-    return cf_map
+    for candidate in paginated_fetch(url):
+        if candidate["id"] == candidate_id:
+            return candidate
+    return None
 
 
-def name_to_id(): return {v: k for k, v in build_cf_map().items()}
+# ============================================================================
+# Airtable Integration Functions
+# ============================================================================
 
-# -----------------------------  Fallback-Suche  ---------------------------- #
+def update_or_create_sales_record(form_data):
+    """
+    Update existing sales record or create new one based on email.
 
+    Args:
+        form_data: Dictionary containing form submission data
 
-@app.route("/api/custom-fields")
-def api_custom_fields():
-    return jsonify(build_cf_map())
-
-
-@app.route("/debug/cf-meta")
-def debug_cf_meta():
-    url = f"{RECRUITCRM_BASE_URL}/custom-fields/candidates"
-    r = requests.get(url, headers=HEADERS, timeout=20)
-
-    if not r.ok:
-        return jsonify(
-            error=True,
-            message=f"Failed to fetch metadata: {r.status_code} {r.text}"
-        )
-
-    fields = r.json()  # it's already a list
-    result = []
-    for f in fields:
-        line = f'{f["field_id"]:>4} | {
-            f["field_name"]:<40} | {f["field_type"]:>10}'
-        if f["field_type"] == "dropdown":
-            opts = [o["value"] for o in f.get("dropdown_options", [])]
-            line += f' → {opts}'
-        result.append(line)
-    return "<pre>" + "\n".join(result) + "</pre>"
-
-
-def fetch_candidate_from_list(cid: int) -> dict | None:
-    url = f"{RECRUITCRM_BASE_URL}/candidates"
-    return next((c for c in paginated(url) if c["id"] == cid), None)
-
-# ---------------------------  Mapping → Frontend  -------------------------- #
-
-
-def update_or_create_sales_record_by_email(form):
-    email = form.get("email")
+    Returns:
+        API response or None if operation failed
+    """
+    email = form_data.get("email")
     if not email:
-        print("❌ Email is required in form data.")
+        print("❌ Email is required for sales record operation")
         return None
 
     headers = {
@@ -117,51 +108,63 @@ def update_or_create_sales_record_by_email(form):
         "Content-Type": "application/json"
     }
 
+    # Search for existing record by email
     search_url = f"https://api.airtable.com/v0/{BASE_ID}/{SALES_TABLE_ID}"
-    params = {
+    search_params = {
         "filterByFormula": f"LOWER({{email}}) = '{email.lower()}'"
     }
-    search_response = requests.get(search_url, headers=headers, params=params)
+
+    search_response = requests.get(
+        search_url, headers=headers, params=search_params)
 
     if search_response.status_code != 200:
-        print(f"❌ Error searching records: {search_response.status_code}")
+        print(f"❌ Error searching sales records: {
+              search_response.status_code}")
         print(search_response.text)
         return None
 
-    records = search_response.json().get("records", [])
+    existing_records = search_response.json().get("records", [])
+    payload = {"fields": generate_airtable_payload_sales(form_data)}
 
-    payload = {
-        "fields": generate_airtable_payload_sales(form)
-    }
-
-    if records:
-        record_id = records[0]["id"]
+    if existing_records:
+        # Update existing record
+        record_id = existing_records[0]["id"]
         update_url = f"{search_url}/{record_id}"
-        update_response = requests.patch(
-            update_url, headers=headers, json=payload)
-        if update_response.status_code == 200:
-            print("✅ Record updated successfully")
-            return update_response.json()
+        response = requests.patch(update_url, headers=headers, json=payload)
+
+        if response.status_code == 200:
+            print("✅ Sales record updated successfully")
+            return response.json()
         else:
-            print(f"❌ Failed to update: {update_response.status_code}")
-            print(update_response.text)
+            print(f"❌ Failed to update sales record: {response.status_code}")
+            print(response.text)
             return None
     else:
-        create_response = requests.post(
-            search_url, headers=headers, json=payload)
-        if create_response.status_code in [200, 201]:
-            print("✅ New record created successfully")
-            return create_response.json()
+        # Create new record
+        response = requests.post(search_url, headers=headers, json=payload)
+
+        if response.status_code in [200, 201]:
+            print("✅ New sales record created successfully")
+            return response.json()
         else:
-            print(f"❌ Failed to create: {create_response.status_code}")
-            print(create_response.text)
+            print(f"❌ Failed to create sales record: {response.status_code}")
+            print(response.text)
             return None
 
 
-def update_or_create_med_record_by_email(form):
-    email = form.get("email")
+def update_or_create_medical_record(form_data):
+    """
+    Update existing medical record or create new one based on email.
+
+    Args:
+        form_data: Dictionary containing form submission data
+
+    Returns:
+        API response or None if operation failed
+    """
+    email = form_data.get("email")
     if not email:
-        print("❌ Email is required in form data.")
+        print("❌ Email is required for medical record operation")
         return None
 
     headers = {
@@ -169,155 +172,60 @@ def update_or_create_med_record_by_email(form):
         "Content-Type": "application/json"
     }
 
+    # Search for existing record by email
     search_url = f"https://api.airtable.com/v0/{BASE_ID}/{MED_TABLE_ID}"
-    params = {
+    search_params = {
         "filterByFormula": f"LOWER({{email}}) = '{email.lower()}'"
     }
-    search_response = requests.get(search_url, headers=headers, params=params)
+
+    search_response = requests.get(
+        search_url, headers=headers, params=search_params)
 
     if search_response.status_code != 200:
-        print(f"❌ Error searching records: {search_response.status_code}")
+        print(f"❌ Error searching medical records: {
+              search_response.status_code}")
         print(search_response.text)
         return None
 
-    records = search_response.json().get("records", [])
+    existing_records = search_response.json().get("records", [])
+    payload = {"fields": generate_airtable_payload_med(form_data)}
 
-    payload = {
-        # same field structure
-        "fields": generate_airtable_payload_med(form)
-    }
-
-    if records:
-        record_id = records[0]["id"]
+    if existing_records:
+        # Update existing record
+        record_id = existing_records[0]["id"]
         update_url = f"{search_url}/{record_id}"
-        update_response = requests.patch(
-            update_url, headers=headers, json=payload)
-        if update_response.status_code == 200:
+        response = requests.patch(update_url, headers=headers, json=payload)
+
+        if response.status_code == 200:
             print("✅ Medical record updated successfully")
-            return update_response.json()
+            return response.json()
         else:
-            print(f"❌ Failed to update: {update_response.status_code}")
-            print(update_response.text)
+            print(f"❌ Failed to update medical record: {response.status_code}")
+            print(response.text)
             return None
     else:
-        create_response = requests.post(
-            search_url, headers=headers, json=payload)
-        if create_response.status_code in [200, 201]:
+        # Create new record
+        response = requests.post(search_url, headers=headers, json=payload)
+
+        if response.status_code in [200, 201]:
             print("✅ New medical record created successfully")
-            return create_response.json()
+            return response.json()
         else:
-            print(f"❌ Failed to create: {create_response.status_code}")
-            print(create_response.text)
+            print(f"❌ Failed to create medical record: {response.status_code}")
+            print(response.text)
             return None
-
-
-def recruit_to_form(raw: dict) -> dict:
-    cf = {f["field_name"]: f["value"] for f in raw.get("custom_fields", [])}
-    print(json.dumps(raw, indent=2))
-
-    return {
-        # ----- Standardfelder ----- #
-        "vorname":          raw.get("first_name"),
-        "nachname":         raw.get("last_name"),
-        "avatar":           raw.get("avatar"),
-        "email":            raw.get("email"),
-        "telefon":          raw.get("contact_number"),
-        "geschlecht":       raw.get("gender_id"),
-        "wohnort":          raw.get("city"),
-        "arbeitgeber_name":      raw.get("current_organization"),
-        "slug":             raw.get("slug"),
-        "consultant":       str(raw.get("owner")),
-        "cv_link":          raw.get("resume", {}).get("file_link")
-        if isinstance(raw.get("resume"), dict) else None,
-        "xing":             raw.get("xing"),
-        "linkedin":         raw.get("linkedin"),
-
-        # ----- Beispiel-Customs (erweiterbar) ----- #
-        "branche": cf.get("Branche"),
-        "kuendigungsfrist": cf.get("Kündigungsfrist"),
-        "anstellungsart": cf.get("Aktuelle Anstellungsart"),
-        "zusatzqualifikation": cf.get("Zusatzqualifikation"),
-        "zusatzbezeichnungen[]": cf.get("Zusatzbezeichnungen"),
-        "wechselmotivation": cf.get("Wechselmotivation"),
-        "bonus_amount": cf.get("Bonushöhe"),
-        "bonus_type": cf.get("Bonustyp"),
-        "gehalt_erhoehen": cf.get("Soll das Gehalt erhöht werden?"),
-        "key_clients": cf.get("Offen für unsere Key-Clients?"),
-        "nicht_an": cf.get("Blacklist: Bitte nicht an diese Unternehmen"),
-        "soll_auf_jeden_fall": cf.get("Whitelist: An wen soll der Kandidat auf jeden Fall geschickt werden?"),
-        "aufhebungsvertrag_wahrscheinlichkeit": cf.get("Wahrscheinlichkeit auf einen Aufhebungsvertrag"),
-        "verfuegbar_ab": cf.get("Ab wann wäre der Kandidat verfügbar?"),
-        "arbeitgeber_standort": cf.get("Arbeitsort (Standort)"),
-        "additional_benefits": cf.get("Zusatzleistungen (aktuell)"),
-        "job_extras": cf.get("Extras (Interview-Notes)"),
-        "interview_schwerpunkte": cf.get("Interview-Notes Schwerpunkte"),
-        "aktiv_suche": cf.get("Ist der Kandidat aktiv auf der Suche?"),
-        "aktiv_bewerbung": cf.get("Ist der Kandidat aktiv in Bewerbungsprozessen?"),
-        "weitere_personalvermittlungen": cf.get("Arbeitet der Kandidat mit weiteren Personalvermittlungen zusammen?"),
-        "cv_submission_deadline": cf.get("CV wird zugeschickt bis zum"),
-        "arbeitgeber_art": cf.get("Art des Arbeitgebers"),
-        "kategorie[]": cf.get("Wunsch Job Fachbereich"),
-        "verkehrsmittel": cf.get("Welches Verkehrsmittel wird genutzt?"),
-        "home_office_aktuell": cf.get("Home-Office (aktuell)"),
-        "home_office_gewuenscht": cf.get("Home-Office (gewünscht)"),
-        "flexible_arbeitszeiten": cf.get("Wunsch Flexible Arbeitszeiten?"),
-        "current_process": cf.get("Aktueller Prozess (IV-Notizen)"),
-        "erreichbare_stadtname": cf.get("Erreichbare Städte"),
-        "wohnort_plz": cf.get("Wohnort (PLZ)"),
-        "wohnort": cf.get("Wohnort (Stadt)"),
-        "aktuelle_position": raw.get("position"),
-        "radius": cf.get("Pendelbarer Radius (in km)"),
-        "current_salary": raw.get("current_salary"),
-        "expected_salary": raw.get("salary_expectation"),
-        "wuensche_an_den_job": cf.get("Wuensche am neuen Job"),
-        "berufliche_erfahrung": cf.get("Aktuelle Berufliche Lage des Kandidaten"),
-
-        # ----- Newly Added Custom Fields ----- #
-        "umzugsbereit[]": cf.get("Umzugsbereit"),            # multiselect
-        "relevante_berufserfahrung": cf.get("Relevante Berufserfahrung"),
-        "berufliche_ziele": cf.get("Berufliche Ziele"),
-        "private_ziele": cf.get("Private Ziele"),
-        "sonstiges": cf.get("Sonstiges"),
-        "umgang_mit_rueckschlaegen": cf.get("Umgang mit Rückschlägen"),
-        "weiterentwicklung": cf.get("Weiterentwicklung"),
-        "finanzielle_motivation": cf.get("Finanzielle Motivation"),
-        "erfolgsmethodik_kpis": cf.get("Erfolgsmethodik & KPIs"),
-
-        "wechselkommitment": cf.get("Wechselkommitment (von 1-10)"),
-        "wunschklinik": cf.get("Wunschklinik"),
-    }
-
-
-# -------------------------------  Routen  ---------------------------------- #
-@app.route("/")
-def index():
-    return render_template("kandidatenformular.html")
-
-
-@app.route("/test")
-def test():
-    return render_template("test_form.html")
-
-
-@app.route("/api/kandidat/<int:cid>")
-def api_kandidat(cid: int):
-    direct = requests.get(f"{RECRUITCRM_BASE_URL}/candidates/{cid}",
-                          headers=HEADERS, timeout=20)
-    raw = direct.json() if direct.ok else fetch_candidate_from_list(cid)
-    skills = raw.get("skill", "")
-    email = raw.get("email")
-    update_skills_in_airtable(email, skills)
-    print(email)
-    print(skills)
-    if not raw:
-        return jsonify(error=True,
-                       message=f"Kandidat {cid} nicht gefunden."), 404
-    return jsonify(recruit_to_form(raw))
 
 
 def update_skills_in_airtable(email, skills):
+    """
+    Update skills field for a candidate record in Airtable.
+
+    Args:
+        email: Candidate's email address
+        skills: Skills data to update
+    """
     if not email or not skills:
-        print("❌ Missing email or skills")
+        print("❌ Missing email or skills data")
         return
 
     headers = {
@@ -325,21 +233,23 @@ def update_skills_in_airtable(email, skills):
         "Content-Type": "application/json"
     }
 
+    # Find record by email
     search_url = f"https://api.airtable.com/v0/{BASE_ID}/{MED_TABLE_ID}"
-    params = {
+    search_params = {
         "filterByFormula": f"LOWER({{email}}) = '{email.lower()}'"
     }
 
-    response = requests.get(search_url, headers=headers, params=params)
+    response = requests.get(search_url, headers=headers, params=search_params)
     if response.status_code != 200:
-        print("❌ Failed to search for record:", response.text)
+        print("❌ Failed to search for candidate record:", response.text)
         return
 
     records = response.json().get("records", [])
     if not records:
-        print("⚠️ No record found with that email")
+        print("⚠️ No candidate record found with that email")
         return
 
+    # Update skills field
     record_id = records[0]["id"]
     update_payload = {"fields": {"skills": skills}}
 
@@ -350,220 +260,37 @@ def update_skills_in_airtable(email, skills):
     )
 
     if update_response.status_code == 200:
-        print("✅ Skills updated in Airtable")
+        print("✅ Skills updated successfully in Airtable")
     else:
         print("❌ Failed to update skills:", update_response.text)
-# -------------------------  Payload-Generator  ----------------------------- #
 
 
-def build_custom_field_payload(form) -> list[dict]:
-    """Convert form data → [{field_id, value}, …] for RecruitCRM PATCH request."""
+# ============================================================================
+# PDF Generation Functions
+# ============================================================================
 
-    def join_multi(n):
-        return ", ".join(form.getlist(n)).strip() or None
+def generate_pdf_document(form_data, template_id):
+    """
+    Generate PDF document using PDFMonkey API.
 
-    wanted = {
-        "Branche": form.get("branche"),
-        "Kündigungsfrist": form.get("kuendigungsfrist"),
-        "Aktuelle Anstellungsart": form.get("anstellungsart"),
-        "Zusatzqualifikation": form.get("zusatzqualifikation"),
-        "Zusatzbezeichnungen": join_multi("zusatzbezeichnungen[]"),
-        "Wechselmotivation": form.get("wechselmotivation"),
-        "Bonushöhe": form.get("bonus_amount"),
-        "Bonustyp": form.get("bonus_type"),
-        "Soll das Gehalt erhöht werden?": form.get("gehalt_erhoehen"),
-        "Offen für unsere Key-Clients?": form.get("key_clients"),
-        "Blacklist: Bitte nicht an diese Unternehmen": form.get("nicht_an"),
-        "Whitelist: An wen soll der Kandidat auf jeden Fall geschickt werden?": form.get("soll_auf_jeden_fall"),
-        "Wahrscheinlichkeit auf einen Aufhebungsvertrag": form.get("aufhebungsvertrag_wahrscheinlichkeit"),
-        "Ab wann wäre der Kandidat verfügbar?": form.get("verfuegbar_ab"),
-        "Arbeitsort (Standort)": form.get("arbeitgeber_standort"),
-        "Zusatzleistungen (aktuell)": form.get("additional_benefits"),
-        "Extras (Interview-Notes)": form.get("job_extras"),
-        "Interview-Notes Schwerpunkte": form.get("interview_schwerpunkte"),
-        "Gewünschter Unternehmenstyp": form.get("unternehmen_wahl"),
-        "Ist der Kandidat aktiv auf der Suche?": form.get("aktiv_suche"),
-        "Ist der Kandidat aktiv in Bewerbungsprozessen?": form.get("aktiv_bewerbung"),
-        "Arbeitet der Kandidat mit weiteren Personalvermittlungen zusammen?": form.get("weitere_personalvermittlungen"),
-        "CV wird zugeschickt bis zum": form.get("cv_submission_deadline"),
-        "Art des Arbeitgebers": form.get("arbeitgeber_art"),
-        "Aktueller Arbeitgeber": form.get("arbeitgeber_name"),
-        "Wunsch Job Fachbereich": join_multi("kategorie[]"),
-        "Welches Verkehrsmittel wird genutzt?": form.get("verkehrsmittel"),
-        "Home-Office (aktuell)": form.get("home_office_aktuell"),
-        "Home-Office (gewünscht)": form.get("home_office_gewuenscht"),
-        "Wunsch Flexible Arbeitszeiten?": form.get("flexible_arbeitszeiten"),
-        "Aktueller Prozess (IV-Notizen)": form.get("current_process"),
-        "Erreichbare Städte": form.get("erreichbare_stadtname"),
-        "Aktuelle Berufliche Lage des Kandidaten": form.get("arbeitgeber_lage"),
-        "Wohnort (PLZ)": form.get("wohnort_plz"),
-        "Wohnort (Stadt)": form.get("wohnort"),
-        "Aktuelle Position": form.get("aktuelle_position"),
-        "Pendelbarer Radius (in km)": form.get("radius"),
-        "Wuensche am neuen Job": form.get("wuensche_an_den_job"),
-        "Aktuelle Berufliche Lage des Kandidaten": form.get("berufliche_erfahrung"),
+    Args:
+        form_data: Form data for PDF generation
+        template_id: PDFMonkey template ID
 
-        # ✅ Newly added custom field mappings
-        "Umzugsbereit": join_multi("umzugsbereit[]"),           # multiselect
-        "Relevante Berufserfahrung": form.get("relevante_berufserfahrung"),
-        "Berufliche Ziele": form.get("berufliche_ziele"),
-        "Private Ziele": form.get("private_ziele"),
-        "Sonstiges": form.get("sonstiges"),
-        "Umgang mit Rückschlägen": form.get("umgang_mit_rueckschlaegen"),
-        "Weiterentwicklung": form.get("weiterentwicklung"),
-        "Finanzielle Motivation": form.get("finanzielle_motivation"),
-        "Erfolgsmethodik & KPIs": form.get("erfolgsmethodik_kpis"),
-        "Wechselkommitment (von 1-10)": form.get("wechselkommitment"),
-        "Wunschklinik": form.get("wunschklinik"),
-        # "Auswertung": form.get("auswertung"),
-        # "Auswertung": "HELLO",
-        "Anonyme Auswertung": form.get("anonym_auswertung"),
-    }
+    Returns:
+        API response from PDFMonkey
+    """
+    # Select appropriate payload generator based on template
+    if template_id in [SALES_TRANSPARENT_TEMPLATE_ID, SALES_ANONYMOUS_TEMPLATE_ID]:
+        pdf_payload = generate_transparent_sales_pdf(form_data)
+    else:  # Medical templates
+        pdf_payload = generate_med_transparent_pdf(form_data)
 
-    n2id = name_to_id()  # assumes this returns a dict: {"Branche": 13, ...}
-    return [{"field_id": n2id[k], "value": v}
-            for k, v in wanted.items()
-            if v and k in n2id]
-# ------------------------------  Submit  ----------------------------------- #
-
-
-def generate_transparent_sales_pdf(form_data):
-
-    return {
-        "kandidat": {
-            "vorname": form_data.get("vorname"),
-            "nachname": form_data.get("nachname"),
-            "email": form_data.get("email"),
-            "telefon": form_data.get("phone"),
-            "wohnort": form_data.get("wohnort"),
-            "aktuelle_organisation": form_data.get("arbeitgeber_name"),
-            "aktuelle_position": form_data.get("aktuelle_position"),
-            "branche": form_data.get("branche"),
-            "kuendigungsfrist": form_data.get("kuendigungsfrist"),
-            "verfuegbar_ab": form_data.get("verfuegbar_ab"),
-            "homeoffice_aktuell": form_data.get("home_office_aktuell"),
-            "homeoffice_wunsch": form_data.get("home_office_gewuenscht"),
-            "arbeitsort": form_data.get("arbeitgeber_standort") or form_data.get("wohnort"),
-            "aktuelles_gehalt": form_data.get("current_salary_display"),
-            "wechselmotiv": form_data.get("wechselmotivation"),
-            "foto_url": form_data.get("avatar"),
-            "wunschgehalt": form_data.get("expected_salary_display"),
-            "umzugsbereitschaft": form_data.get("umzugsbereit[]"),
-            "wechselkommitment": form_data.get("wechselkommitment", "Nein"),
-            "berufserfahrung": form_data.get("relevante_berufserfahrung", "0"),
-            "erfolgsmethodik": form_data.get("erfolgsmethodik_kpis"),
-            "umgang_rueckschlaege": form_data.get("umgang_mit_rueckschlaegen"),
-            "weiterentwicklung": form_data.get("weiterentwicklung"),
-            "finanzielle_motivation": form_data.get("finanzielle_motivation"),
-            "sonstiges": form_data.get("sonstiges"),
-            "berufliche_ziele": form_data.get("berufliche_ziele"),
-            "private_ziele": form_data.get("private_ziele"),
-            # NOT PROVIDED
-            "vertriebs_erfahrung": form_data.get("relevante_berufserfahrung", "Keine Angaben"),
-        }
-    }
-
-
-def generate_airtable_payload_sales(form):
-    return {
-        "foto_url": form.get("avatar"),
-        "vorname": form.get("vorname"),
-        "nachname": form.get("nachname"),
-        "email": form.get("email"),
-        "telefon": form.get("phone"),
-        "aktuelle_position": form.get("aktuelle_position"),
-        "aktuelle_organisation": form.get("arbeitgeber_name"),
-        "aktuelles_gehalt": form.get("current_salary"),
-        "wunschgehalt": form.get("expected_salary"),
-        "verfuegbar_ab": form.get("verfuegbar_ab"),
-        "kuendigungsfrist": form.get("kuendigungsfrist"),
-        "umzugsbereitschaft": form.get("umzugsbereit[]"),
-        "wechselkommitment": form.get("wechselkommitment"),
-        "fachbereich_aktuell": form.get("branche"),
-        "arbeitsort": form.get("arbeitgeber_standort") or form.get("wohnort"),
-        "wuensche_an_den_neuen_job": form.get("wuensche_an_den_job"),
-        "berufliche_erfahrung": form.get("relevante_berufserfahrung"),
-        "sonstiges": form.get("sonstiges"),
-    }
-
-
-def generate_airtable_payload_med(form):
-    return {
-        "foto_url": form.get("avatar"),
-        "vorname": form.get("vorname"),
-        "nachname": form.get("nachname"),
-        "email": form.get("email"),
-        "telefon": form.get("phone"),
-        "aktuelle_position": form.get("aktuelle_position"),
-        "aktuelle_organisation": form.get("arbeitgeber_name"),
-        "aktuelles_gehalt": form.get("current_salary"),
-        "wunschgehalt": form.get("expected_salary"),
-        "verfuegbar_ab": form.get("verfuegbar_ab"),
-        "kuendigungsfrist": form.get("kuendigungsfrist"),
-        "wechselkommitment": form.get("wechselkommitment"),
-        "fachbereich_aktuell": form.get("fachbereich_aktuell"),
-        "fachbereich_wunsch": form.get("fachbereich_wunsch"),
-
-        "wohnort": form.get("wohnort"),
-        "arbeitsort": form.get("arbeitgeber_standort") or form.get("wohnort"),
-        "berufliche_ziele": form.get("berufliche_ziele"),
-        "private_ziele": form.get("private_ziele"),
-        "sonstiges": form.get("sonstiges"),
-        "berufliche_erfahrung": form.get("berufliche_erfahrung"),
-    }
-
-
-def generate_med_transparent_pdf(form_data):
-    return {
-        "kandidat": {
-            "foto_url": form_data.get("avatar", ""),
-            "vorname": form_data.get("vorname", ""),
-            "nachname": form_data.get("nachname", ""),
-            "email": form_data.get("email", ""),
-            "telefon": form_data.get("phone", ""),
-            "aktuelle_position": form_data.get("aktuelle_position", ""),
-            "aktuelle_organisation": form_data.get("arbeitgeber_name", ""),
-            "aktuelles_gehalt": form_data.get("current_salary_display", "Nicht angegeben"),
-            "wunschgehalt": form_data.get("expected_salary_display", "Nicht angegeben"),
-            "verfuegbar_ab": form_data.get("verfuegbar_ab", ""),
-            "kuendigungsfrist": form_data.get("kuendigungsfrist", "Nicht angegeben"),
-            "umzugsbereitschaft": form_data.get("umzugsbereit[]", "Nein"),
-            "wechselkommitment": form_data.get("wechselkommitment", "0"),
-            "fachbereich_aktuell": form_data.get("branche", "Nicht angegeben"),
-            "fachbereich_wunsch": form_data.get("kategorie[]", "Nicht angegeben"),
-            "wohnort": form_data.get("wohnort", ""),
-            "berufserfahrung_in_jahren": form_data.get("berufserfahrung", "0"),
-            "arbeitsort": form_data.get("arbeitgeber_standort", form_data.get("wohnort", "")),
-            "wunschklinik": form_data.get("wunschklinik", "Nicht angegeben"),
-            "wunscharbeitsort": form_data.get("wunscharbeitsort", form_data.get("locality", "Nicht angegeben")),
-            "wuensche_an_den_neuen_job": form_data.get("wuensche_an_den_job", "Nicht angegeben"),
-            "berufliche_erfahrung": form_data.get("berufliche_erfahrung", "Nicht angegeben"),
-            "sonstiges": form_data.get("sonstiges", "Keine Bemerkungen")
-        }
-    }
-
-
-PDFMONKEY_HEADERS = {
-    "Authorization": f"Bearer {PDFMONKEY_API_KEY}",
-    "Accept": "application/json"
-}
-
-
-def call_pdfMonkey(form, TemplateId):
-    if TemplateId == SALES_TRANSPARENT_TEMPLATE_ID:
-        pdf_payload = generate_transparent_sales_pdf(form)
-    elif TemplateId == SALES_ANONYMOUS_TEMPLATE_ID:
-        pdf_payload = generate_transparent_sales_pdf(form)
-    elif TemplateId == MED_TRANSPARENT_TEMPLATE_ID:
-        pdf_payload = generate_med_transparent_pdf(form)
-    else:
-        pdf_payload = generate_med_transparent_pdf(form)
-
-    pdf_response = requests.post(
+    response = requests.post(
         "https://api.pdfmonkey.io/api/v1/documents",
         json={
             "document": {
-                "document_template_id": TemplateId,
+                "document_template_id": template_id,
                 "payload": pdf_payload,
                 "status": "pending"
             }
@@ -571,159 +298,304 @@ def call_pdfMonkey(form, TemplateId):
         headers={"Authorization": f"Bearer {PDFMONKEY_API_KEY}"},
         timeout=30
     )
-    return pdf_response
+
+    return response
 
 
-def poll_until_ready(document_id, max_wait=60, interval=5):
+def poll_pdf_generation_status(document_id, max_wait_seconds=60, check_interval=5):
     """
-    Poll PDFMonkey until the document is ready (status: 'success') or timeout.
-    Returns the download_url if ready, or None.
-    """
-    url = f"https://api.pdfmonkey.io/api/v1/document_cards/{document_id}"
-    waited = 0
+    Poll PDFMonkey API until document is ready or timeout occurs.
 
-    while waited < max_wait:
-        response = requests.get(url, headers=PDFMONKEY_HEADERS)
+    Args:
+        document_id: PDFMonkey document ID
+        max_wait_seconds: Maximum time to wait (default: 60 seconds)
+        check_interval: Time between status checks (default: 5 seconds)
+
+    Returns:
+        Download URL if successful, None if failed or timed out
+    """
+    status_url = f"https://api.pdfmonkey.io/api/v1/document_cards/{
+        document_id}"
+    elapsed_time = 0
+
+    while elapsed_time < max_wait_seconds:
+        response = requests.get(status_url, headers=PDFMONKEY_HEADERS)
+
         if response.status_code != 200:
-            print("Error checking document status:", response.text)
+            print("❌ Error checking PDF generation status:", response.text)
             return None
 
-        data = response.json()
-        print(data)
-        status = data["document_card"]["status"]
+        document_data = response.json()
+        print(f"PDF Status Check: {document_data}")
+
+        status = document_data["document_card"]["status"]
 
         if status == "success":
-            return data["document_card"]["public_share_link"]
-
+            print("✅ PDF generated successfully")
+            return document_data["document_card"]["public_share_link"]
         elif status == "failure":
-            print("Document generation failed:",
-                  )
+            print("❌ PDF generation failed")
             return None
 
-        time.sleep(interval)
-        waited += interval
+        time.sleep(check_interval)
+        elapsed_time += check_interval
 
-    print("Timed out waiting for document.")
+    print("⏰ PDF generation timed out")
     return None
 
 
+# ============================================================================
+# Flask Routes
+# ============================================================================
+
+@app.route("/")
+def index():
+    """Render the main candidate form page."""
+    return render_template("kandidatenformular.html")
+
+
+@app.route("/test")
+def test_page():
+    """Render the test form page for development/testing."""
+    return render_template("test_form.html")
+
+
+@app.route("/api/custom-fields")
+def api_custom_fields():
+    """
+    API endpoint to get all custom fields mapping.
+
+    Returns:
+        JSON mapping of field IDs to field names
+    """
+    return jsonify(build_custom_fields_map())
+
+
+@app.route("/debug/cf-meta")
+def debug_custom_fields_metadata():
+    """
+    Debug endpoint to display custom field metadata in readable format.
+
+    Returns:
+        HTML formatted display of custom fields with their properties
+    """
+    url = f"{RECRUITCRM_BASE_URL}/custom-fields/candidates"
+    response = requests.get(url, headers=HEADERS, timeout=20)
+
+    if not response.ok:
+        return jsonify(
+            error=True,
+            message=f"Failed to fetch custom fields metadata: {
+                response.status_code} {response.text}"
+        )
+
+    fields = response.json()
+    formatted_output = []
+
+    for field in fields:
+        line = f'{field["field_id"]:>4} | {
+            field["field_name"]:<40} | {field["field_type"]:>10}'
+
+        # Add dropdown options if applicable
+        if field["field_type"] == "dropdown":
+            options = [option["value"]
+                       for option in field.get("dropdown_options", [])]
+            line += f' → {options}'
+
+        formatted_output.append(line)
+
+    return "<pre>" + "\n".join(formatted_output) + "</pre>"
+
+
+@app.route("/api/kandidat/<int:candidate_id>")
+def api_get_candidate(candidate_id: int):
+    """
+    Get candidate data by ID and update skills in Airtable.
+
+    Args:
+        candidate_id: The candidate's ID
+
+    Returns:
+        JSON response with candidate data or error message
+    """
+    # Try direct API call first
+    direct_response = requests.get(
+        f"{RECRUITCRM_BASE_URL}/candidates/{candidate_id}",
+        headers=HEADERS,
+        timeout=20
+    )
+
+    # Use direct response if successful, otherwise fallback to list search
+    candidate_data = (
+        direct_response.json() if direct_response.ok
+        else fetch_candidate_from_list(candidate_id)
+    )
+
+    if not candidate_data:
+        return jsonify(
+            error=True,
+            message=f"Candidate {candidate_id} not found"
+        ), 404
+
+    # Extract and update skills in Airtable
+    skills = candidate_data.get("skill", "")
+    email = candidate_data.get("email")
+
+    if email and skills:
+        update_skills_in_airtable(email, skills)
+        print(f"Updated skills for {email}: {skills}")
+
+    return jsonify(recruit_to_form(candidate_data))
+
+
 @app.route("/api/submit", methods=["POST"])
-def submit():
-    print(f"[{dt.datetime.now():%H:%M:%S}]  POST /api/submit")
+def submit_candidate_form():
+    """
+    Process candidate form submission.
 
-    form = request.form.copy()
-    kid = form.get("kandidat_slug")
+    Handles:
+    - PDF generation (transparent and anonymous versions)
+    - Airtable record creation/update
+    - RecruitCRM candidate update
 
-    if not kid:
+    Returns:
+        JSON response indicating success or failure
+    """
+    print(f"[{dt.datetime.now():%H:%M:%S}] Processing form submission")
 
-        return jsonify(status="error", message="Keine Kandidaten-ID übergeben"), 400
+    form_data = request.form.copy()
+    candidate_id = form_data.get("kandidat_slug")
 
-    branche = form.get("branche")
+    if not candidate_id:
+        return jsonify(
+            status="error",
+            message="No candidate ID provided"
+        ), 400
 
-    if "Med" in branche:
-        pdf_transparent_response = call_pdfMonkey(
-            form, MED_TRANSPARENT_TEMPLATE_ID)
-        pdf_anonymous_response = call_pdfMonkey(
-            form, MED_ANONYMOUS_TEMPLATE_ID)
-        update_or_create_med_record_by_email(form)
-    else:
-        pdf_transparent_response = call_pdfMonkey(
-            form, SALES_TRANSPARENT_TEMPLATE_ID)
-        pdf_anonymous_response = call_pdfMonkey(
-            form, SALES_ANONYMOUS_TEMPLATE_ID)
-        update_or_create_sales_record_by_email(form)
-
-    anon_id = pdf_anonymous_response.json()["document"]["id"]
-    transparent_id = pdf_transparent_response.json()["document"]["id"]
-
-    anon_url = poll_until_ready(anon_id)
-    transparent_url = poll_until_ready(transparent_id)
-
-    form["auswertung"] = transparent_url
-    form["anonym_auswertung"] = anon_url
-
-    # First handle RecruitCRM API call
-    cf = build_custom_field_payload(form)
-
-    contact_raw = form.get("phone")
-    contact_number = int(
-        contact_raw) if contact_raw and contact_raw.isdigit() else None
-
-    geschlecht = form.get("geschlecht")
-    try:
-        gender_id = int(geschlecht)
-    except (ValueError, TypeError):
-        gender_id = 3
-
-    payload = {
-        "first_name": form.get("vorname"),
-        "last_name": form.get("nachname"),
-        "email": form.get("email"),
-        "contact_number": contact_number,
-        "position": form.get("aktuelle_position"),
-        "gender_id": gender_id,
-        "city": form.get("wohnort"),
-        "current_organization": form.get("arbeitgeber_name"),
-        "slug": form.get("slug"),
-        "owner": form.get("consultant"),
-        "resume": form.get("cv_link") if form.get("cv_link") else None,
-        "xing": form.get("xing_link"),
-        "linkedin": form.get("linkedin_link"),
-        "current_salary": form.get("current_salary"),
-        "salary_expectation": form.get("expected_salary"),
-        "available_from": form.get("verfuegbar_ab"),
-        "locality": form.get("erreichbare_stadtname"),
-        "notice_period": form.get("kuendigungsfrist"),
-        "custom_fields": cf
-    }
-
-    print(json.dumps(payload, indent=2))
-
-    rc_url = f"{RECRUITCRM_BASE_URL}/candidates/{kid}"
+    branch = form_data.get("branche", "")
 
     try:
-        # First save to RecruitCRM
-        r = requests.post(
-            rc_url,
+        # Generate PDFs based on branch type
+        if "Med" in branch:
+            pdf_transparent = generate_pdf_document(
+                form_data, MED_TRANSPARENT_TEMPLATE_ID)
+            pdf_anonymous = generate_pdf_document(
+                form_data, MED_ANONYMOUS_TEMPLATE_ID)
+            update_or_create_medical_record(form_data)
+        else:
+            pdf_transparent = generate_pdf_document(
+                form_data, SALES_TRANSPARENT_TEMPLATE_ID)
+            pdf_anonymous = generate_pdf_document(
+                form_data, SALES_ANONYMOUS_TEMPLATE_ID)
+            update_or_create_sales_record(form_data)
+
+        # Extract document IDs from responses
+        anonymous_doc_id = pdf_anonymous.json()["document"]["id"]
+        transparent_doc_id = pdf_transparent.json()["document"]["id"]
+
+        # Wait for PDFs to be generated and get download URLs
+        anonymous_url = poll_pdf_generation_status(anonymous_doc_id)
+        transparent_url = poll_pdf_generation_status(transparent_doc_id)
+
+        # Add PDF URLs to form data
+        form_data["auswertung"] = transparent_url
+        form_data["anonym_auswertung"] = anonymous_url
+
+        # Prepare RecruitCRM payload
+        custom_fields = build_custom_field_payload(form_data)
+
+        # Process contact number
+        contact_raw = form_data.get("phone")
+        contact_number = (
+            int(contact_raw) if contact_raw and contact_raw.isdigit()
+            else None
+        )
+
+        # Process gender ID
+        try:
+            gender_id = int(form_data.get("geschlecht", 3))
+        except (ValueError, TypeError):
+            gender_id = 3  # Default gender ID
+
+        # Build complete payload for RecruitCRM
+        recruitcrm_payload = {
+            "first_name": form_data.get("vorname"),
+            "last_name": form_data.get("nachname"),
+            "email": form_data.get("email"),
+            "contact_number": contact_number,
+            "position": form_data.get("aktuelle_position"),
+            "gender_id": gender_id,
+            "city": form_data.get("wohnort"),
+            "current_organization": form_data.get("arbeitgeber_name"),
+            "slug": form_data.get("slug"),
+            "owner": form_data.get("consultant"),
+            "resume": form_data.get("cv_link") if form_data.get("cv_link") else None,
+            "xing": form_data.get("xing_link"),
+            "linkedin": form_data.get("linkedin_link"),
+            "current_salary": form_data.get("current_salary"),
+            "salary_expectation": form_data.get("expected_salary"),
+            "available_from": form_data.get("verfuegbar_ab"),
+            "locality": form_data.get("erreichbare_stadtname"),
+            "notice_period": form_data.get("kuendigungsfrist"),
+            "custom_fields": custom_fields
+        }
+
+        print("RecruitCRM Payload:")
+        print(json.dumps(recruitcrm_payload, indent=2))
+
+        # Submit to RecruitCRM
+        recruitcrm_url = f"{RECRUITCRM_BASE_URL}/candidates/{candidate_id}"
+        recruitcrm_response = requests.post(
+            recruitcrm_url,
             headers={**HEADERS, "Accept": "application/json"},
-            json=payload,
+            json=recruitcrm_payload,
             timeout=20
         )
 
-        print(r.json())
-        if r.status_code != 200:
+        print("RecruitCRM Response:")
+        print(recruitcrm_response.json())
+
+        if recruitcrm_response.status_code != 200:
             return jsonify(
                 status="error",
-                message=f"RecruitCRM-Fehler {r.status_code}: {r.text}"
-            ), r.status_code
+                message=f"RecruitCRM API Error {
+                    recruitcrm_response.status_code}: {recruitcrm_response.text}"
+            ), recruitcrm_response.status_code
 
         return jsonify(
             status="success",
-            message="Kandidat erfolgreich gespeichert.",
+            message="Candidate data saved successfully"
         )
 
     except requests.exceptions.RequestException as e:
         return jsonify(
             status="error",
-            message=f"API Fehler: {str(e)}"
+            message=f"API Request Error: {str(e)}"
+        ), 500
+    except Exception as e:
+        return jsonify(
+            status="error",
+            message=f"Unexpected error occurred: {str(e)}"
         ), 500
 
-# ------------------------ Debug-Ausgabe aller Regeln ----------------------- #
 
+# ============================================================================
+# Application Startup
+# ============================================================================
 
-print("\n=== Aktive Flask-Regeln ===")
-for rule in app.url_map.iter_rules():
-    print(f"{rule}  →  {sorted(rule.methods)}")
-print()  # Leerzeile zur Übersicht
-# --------------------------------------------------------------------------- #
+def print_flask_routes():
+    """Print all registered Flask routes for debugging."""
+    print("\n=== Registered Flask Routes ===")
+    for rule in app.url_map.iter_rules():
+        methods = sorted(
+            [method for method in rule.methods if method not in ['HEAD', 'OPTIONS']])
+        print(f"{str(rule):<30} → {methods}")
+    print()
+
 
 if __name__ == "__main__":
-    app.run(debug=True, extra_files=["kandidatenformular.html"])
-# --------------------------------------------------------------------------- #
-
-print("\n=== Aktive Flask-Regeln ===")
-pprint(app.url_map.iter_rules())
-print()          # Leerzeile für Übersicht
-
-if __name__ == "__main__":
-    app.run(debug=True, extra_files=["kandidatenformular.html"])
+    print_flask_routes()
+    app.run(
+        debug=True,
+        extra_files=["kandidatenformular.html"]
+    )
